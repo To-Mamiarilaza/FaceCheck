@@ -1,0 +1,623 @@
+﻿@page
+@model EmployeeListModel
+@{
+    ViewData["Title"] = "Employee List";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - FaceCheck</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(0, 255, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(138, 43, 226, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2.5rem 3rem;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 3rem;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #b0b0b0;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+
+        .controls-section {
+            background: rgba(20, 20, 35, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .controls-row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .search-container {
+            flex: 1;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            stroke: #606060;
+            pointer-events: none;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.875rem 1rem 0.875rem 3rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(0, 255, 255, 0.4);
+        }
+
+        .search-input::placeholder {
+            color: #606060;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: rgba(0, 255, 255, 0.15);
+            color: #00ffff;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: rgba(0, 255, 255, 0.25);
+            border-color: rgba(0, 255, 255, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: #b0b0b0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+        }
+
+        .btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .table-wrapper {
+            background: rgba(20, 20, 35, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        th {
+            padding: 1.125rem 1.5rem;
+            text-align: left;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #909090;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 1.25rem 1.5rem;
+            font-size: 0.95rem;
+            color: #d0d0d0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        tbody tr {
+            transition: background-color 0.15s ease;
+        }
+
+        tbody tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(0, 180, 255, 0.3));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: #00ffff;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
+        .employee-name {
+            font-weight: 500;
+            color: #ffffff;
+        }
+
+        .employee-email {
+            color: #909090;
+            font-size: 0.875rem;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.875rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .badge-active {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        .badge-inactive {
+            background: rgba(251, 146, 60, 0.15);
+            color: #fb923c;
+            border: 1px solid rgba(251, 146, 60, 0.2);
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .btn-delete {
+            padding: 0.5rem 1rem;
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-delete:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .pagination-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: rgba(20, 20, 35, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+        }
+
+        .pagination-info {
+            color: #909090;
+            font-size: 0.9rem;
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .page-btn {
+            min-width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #b0b0b0;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .page-btn:hover:not(:disabled):not(.active) {
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+        }
+
+        .page-btn.active {
+            background: rgba(0, 255, 255, 0.15);
+            border-color: rgba(0, 255, 255, 0.3);
+            color: #00ffff;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .empty-state {
+            padding: 5rem 2rem;
+            text-align: center;
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            stroke: #404040;
+            margin-bottom: 1.5rem;
+        }
+
+        .empty-state h3 {
+            color: #808080;
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            color: #606060;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="#" class="back-btn" onclick="goBack()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                </svg>
+                Back
+            </a>
+            <h1>Employee Management</h1>
+            <div style="width: 80px;"></div>
+        </div>
+
+        <div class="controls-section">
+            <div class="controls-row">
+                <div class="search-container">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="M21 21l-4.35-4.35"/>
+                    </svg>
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search employees...">
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="importData()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                        </svg>
+                        Import
+                    </button>
+                    <button class="btn btn-primary" onclick="exportData()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3v-12"/>
+                        </svg>
+                        Export
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="employeeTable">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;"></th>
+                        <th>Employee</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Date Registered</th>
+                        <th style="width: 120px; text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                </svg>
+                <h3>No employees found</h3>
+                <p>Try adjusting your search criteria</p>
+            </div>
+        </div>
+
+        <div class="pagination-wrapper">
+            <div class="pagination-info">
+                Showing <span id="showingStart">1</span>-<span id="showingEnd">5</span> of <span id="totalItems">0</span> employees
+            </div>
+            <div class="pagination-controls">
+                <button class="page-btn" id="prevBtn" onclick="changePage(-1)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+                <div id="pageNumbers" style="display: flex; gap: 0.5rem;"></div>
+                <button class="page-btn" id="nextBtn" onclick="changePage(1)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allEmployees = [
+            { id: 1, firstName: 'John', lastName: 'Doe', email: 'john.doe@company.com', status: 'active', registered: '2024-11-15' },
+            { id: 2, firstName: 'Jane', lastName: 'Smith', email: 'jane.smith@company.com', status: 'active', registered: '2024-11-20' },
+            { id: 3, firstName: 'Michael', lastName: 'Johnson', email: 'michael.j@company.com', status: 'inactive', registered: '2024-10-05' },
+            { id: 4, firstName: 'Emily', lastName: 'Brown', email: 'emily.brown@company.com', status: 'active', registered: '2024-11-28' },
+            { id: 5, firstName: 'David', lastName: 'Wilson', email: 'david.wilson@company.com', status: 'active', registered: '2024-11-10' },
+            { id: 6, firstName: 'Sarah', lastName: 'Martinez', email: 'sarah.m@company.com', status: 'active', registered: '2024-11-22' },
+            { id: 7, firstName: 'Robert', lastName: 'Anderson', email: 'robert.a@company.com', status: 'inactive', registered: '2024-09-15' },
+            { id: 8, firstName: 'Lisa', lastName: 'Taylor', email: 'lisa.taylor@company.com', status: 'active', registered: '2024-11-30' },
+            { id: 9, firstName: 'James', lastName: 'Garcia', email: 'james.garcia@company.com', status: 'active', registered: '2024-12-01' },
+            { id: 10, firstName: 'Maria', lastName: 'Rodriguez', email: 'maria.r@company.com', status: 'active', registered: '2024-11-25' },
+            { id: 11, firstName: 'William', lastName: 'Martinez', email: 'william.m@company.com', status: 'inactive', registered: '2024-10-20' },
+            { id: 12, firstName: 'Patricia', lastName: 'Hernandez', email: 'patricia.h@company.com', status: 'active', registered: '2024-11-18' },
+        ];
+
+        let filteredEmployees = [...allEmployees];
+        let currentPage = 1;
+        const itemsPerPage = 8;
+
+        function renderTable() {
+            const tableBody = document.getElementById('tableBody');
+            const emptyState = document.getElementById('emptyState');
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageData = filteredEmployees.slice(startIndex, endIndex);
+
+            if (filteredEmployees.length === 0) {
+                tableBody.innerHTML = '';
+                emptyState.style.display = 'block';
+                updatePaginationInfo();
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            tableBody.innerHTML = pageData.map(emp => `
+                <tr>
+                    <td>
+                        <div class="avatar">${emp.firstName.charAt(0)}${emp.lastName.charAt(0)}</div>
+                    </td>
+                    <td>
+                        <div class="employee-name">${emp.firstName} ${emp.lastName}</div>
+                    </td>
+                    <td>
+                        <div class="employee-email">${emp.email}</div>
+                    </td>
+                    <td>
+                        <span class="badge badge-${emp.status}">
+                            <span class="status-dot"></span>
+                            ${emp.status.charAt(0).toUpperCase() + emp.status.slice(1)}
+                        </span>
+                    </td>
+                    <td>${new Date(emp.registered).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+                    <td style="text-align: center;">
+                        <button class="btn-delete" onclick="deleteEmployee(${emp.id})">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            updatePaginationInfo();
+        }
+
+        function updatePaginationInfo() {
+            const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage + 1;
+            const endIndex = Math.min(currentPage * itemsPerPage, filteredEmployees.length);
+
+            document.getElementById('showingStart').textContent = filteredEmployees.length > 0 ? startIndex : 0;
+            document.getElementById('showingEnd').textContent = endIndex;
+            document.getElementById('totalItems').textContent = filteredEmployees.length;
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = currentPage === totalPages || totalPages === 0;
+
+            const pageNumbers = document.getElementById('pageNumbers');
+            pageNumbers.innerHTML = '';
+            
+            const maxVisible = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+            
+            if (endPage - startPage < maxVisible - 1) {
+                startPage = Math.max(1, endPage - maxVisible + 1);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'page-btn' + (i === currentPage ? ' active' : '');
+                btn.textContent = i;
+                btn.onclick = () => goToPage(i);
+                pageNumbers.appendChild(btn);
+            }
+        }
+
+        function changePage(direction) {
+            const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
+            currentPage = Math.max(1, Math.min(totalPages, currentPage + direction));
+            renderTable();
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderTable();
+        }
+
+        function deleteEmployee(id) {
+            if (confirm('Are you sure you want to delete this employee? This action cannot be undone.')) {
+                allEmployees = allEmployees.filter(emp => emp.id !== id);
+                filteredEmployees = filteredEmployees.filter(emp => emp.id !== id);
+                
+                const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
+                if (currentPage > totalPages && totalPages > 0) {
+                    currentPage = totalPages;
+                }
+                
+                renderTable();
+            }
+        }
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            filteredEmployees = allEmployees.filter(emp => 
+                emp.firstName.toLowerCase().includes(searchTerm) ||
+                emp.lastName.toLowerCase().includes(searchTerm) ||
+                emp.email.toLowerCase().includes(searchTerm)
+            );
+            currentPage = 1;
+            renderTable();
+        });
+
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json,.csv';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    console.log('Importing file:', file.name);
+                    alert('Import functionality\n\nFile: ' + file.name + '\nImplement your import logic here.');
+                }
+            };
+            input.click();
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify(allEmployees, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `employees_export_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        renderTable();
+    </script>
+</body>
+</html>

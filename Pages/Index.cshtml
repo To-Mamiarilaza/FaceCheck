@@ -1,0 +1,265 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - FaceCheck</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(138, 43, 226, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+
+        h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #00ffff 0%, #00d4ff 25%, #0099ff 50%, #00d4ff 75%, #00ffff 100%);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            animation: gradientShift 4s ease infinite, glow 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 30px rgba(0, 255, 255, 0.2));
+        }
+
+        .subtitle {
+            color: #a0a0a0;
+            font-size: 1.3rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            font-weight: 300;
+            animation: fadeInUp 0.8s ease-out 0.2s backwards;
+        }
+
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .nav-card {
+            background: rgba(30, 30, 50, 0.6);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(0, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 4rem 3rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            min-height: 280px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .nav-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.1) 0%, rgba(138, 43, 226, 0.1) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .nav-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(0, 255, 255, 0.6);
+            box-shadow: 0 20px 60px rgba(0, 255, 255, 0.3);
+        }
+
+        .nav-card:hover::before {
+            opacity: 1;
+        }
+
+        .nav-card:active {
+            transform: translateY(-5px);
+        }
+
+        .icon {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 1;
+            stroke-width: 2;
+        }
+
+        .nav-card:nth-child(1) .icon { stroke: #00ffff; }
+        .nav-card:nth-child(2) .icon { stroke: #00ff88; }
+        .nav-card:nth-child(3) .icon { stroke: #ff00ff; }
+        .nav-card:nth-child(4) .icon { stroke: #ffaa00; }
+
+        .nav-title {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 0.8rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .nav-description {
+            color: #a0a0a0;
+            font-size: 1.1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 2rem;
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .nav-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>FaceCheck System</h1>
+            <p class="subtitle">Advanced Biometric Authentication System</p>
+        </header>
+
+        <div class="nav-grid">
+            <div class="nav-card" onclick="navigate('NewEmployee')">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                </svg>
+                <div class="nav-title">Register New Employee</div>
+                <div class="nav-description">Add new team members to the system</div>
+            </div>
+
+            <div class="nav-card" onclick="navigate('EmployeeList')">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6"/>
+                </svg>
+                <div class="nav-title">Employee List</div>
+                <div class="nav-description">View and manage all employees</div>
+            </div>
+
+            <div class="nav-card" onclick="navigate('Statistics')">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+                <div class="nav-title">Statistics</div>
+                <div class="nav-description">Analytics and insights dashboard</div>
+            </div>
+
+            <div class="nav-card" onclick="navigate('Detection')">
+                <!-- <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 3l3 3m0 0l3 3M6 6l3-3m0 0L6 9m12 6l3 3m0 0l3-3m-3 3l-3-3m0 0l3 3"/>
+                </svg> -->
+
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M2.25 12s3.75-7.5 9.75-7.5 9.75 7.5 9.75 7.5-3.75 7.5-9.75 7.5S2.25 12 2.25 12z" />
+                    <circle cx="12" cy="12" r="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+
+
+
+                <div class="nav-title">Detect Face</div>
+                <div class="nav-description">Real-time face recognition</div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2025 FaceCheck System. All rights reserved.
+    </footer>
+
+    <script>
+        function navigate(page) {
+            console.log('Navigating to:', page);
+            window.location.href = page;
+        }
+
+        // Add subtle animation on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.nav-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>

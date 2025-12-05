@@ -1,0 +1,878 @@
+﻿@page
+@model StatisticsModel
+@{
+    ViewData["Title"] = "Statistics";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistics & Attendance</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            position: relative;
+            color: #e0e0e0;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(0, 255, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(138, 43, 226, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2.5rem 3rem;
+            flex: 1;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #b0b0b0;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+
+        .top-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: rgba(20, 20, 35, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.2s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            color: #ffffff;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-label {
+            color: #909090;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #00ffff;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-subtext {
+            color: #606060;
+            font-size: 0.8rem;
+        }
+
+        .controls-section {
+            background: rgba(20, 20, 35, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 1.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .controls-row {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            color: #b0b0b0;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .form-group input {
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            min-width: 150px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: rgba(0, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .form-group input::placeholder {
+            color: #606060;
+        }
+
+        .btn-reset {
+            padding: 0.75rem 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #b0b0b0;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-reset:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+        }
+
+        .table-wrapper {
+            background: rgba(20, 20, 35, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-size: 1.1rem;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .legend {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: #909090;
+        }
+
+        .legend-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+        .legend-box.present {
+            background: rgba(34, 197, 94, 0.6);
+            border: 1px solid rgba(34, 197, 94, 0.8);
+        }
+
+        .legend-box.absent {
+            background: rgba(239, 68, 68, 0.6);
+            border: 1px solid rgba(239, 68, 68, 0.8);
+        }
+
+        .legend-box.weekend {
+            background: rgba(107, 114, 128, 0.3);
+            border: 1px solid rgba(107, 114, 128, 0.5);
+        }
+
+        .table-scroll {
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            position: relative;
+        }
+
+        .table-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .table-scroll::after {
+            content: '← Swipe →';
+            position: absolute;
+            right: 20px;
+            bottom: 15px;
+            color: rgba(0, 255, 255, 0.6);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            animation: fadeInOut 3s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        .table-scroll::before {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 40px;
+            background: linear-gradient(to left, rgba(20, 20, 35, 0.9), transparent);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        @@keyframes fadeInOut {
+            0%, 100% {
+                opacity: 0.3;
+            }
+            50% {
+                opacity: 0.8;
+            }
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        thead {
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        th {
+            padding: 1rem 0.75rem;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #909090;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        th:first-child {
+            text-align: left;
+            min-width: 150px;
+        }
+
+        td {
+            padding: 1rem 0.75rem;
+            color: #d0d0d0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: center;
+        }
+
+        td:first-child {
+            text-align: left;
+            font-weight: 500;
+            color: #ffffff;
+            position: sticky;
+            left: 0;
+            background: rgba(20, 20, 35, 0.9);
+            z-index: 1;
+        }
+
+        tbody tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .attendance-cell {
+            padding: 0.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: default;
+            transition: all 0.2s ease;
+        }
+
+        .attendance-cell.present {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .attendance-cell.absent {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .attendance-cell.weekend {
+            background: rgba(107, 114, 128, 0.1);
+            color: #6b7280;
+            border: 1px solid rgba(107, 114, 128, 0.2);
+        }
+
+        .empty-state {
+            padding: 3rem 2rem;
+            text-align: center;
+            color: #606060;
+        }
+
+        .empty-state svg {
+            width: 48px;
+            height: 48px;
+            stroke: #404040;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            color: #808080;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="#" class="back-btn" onclick="goBack()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                </svg>
+                Back
+            </a>
+            <h1>Statistics & Attendance</h1>
+            <div style="width: 80px;"></div>
+        </div>
+
+        <div class="top-section">
+            <!-- Missing Rate Chart -->
+            <div class="card">
+                <div class="card-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 12h18M3 6h18M3 18h18"/>
+                    </svg>
+                    Monthly Absence Rate
+                </div>
+                <div class="chart-container">
+                    <canvas id="absentRateChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-label">Total Employees</div>
+                    <div class="stat-value" id="totalEmployees">0</div>
+                    <div class="stat-subtext">Active employees</div>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-label">Today's Presence</div>
+                    <div class="stat-value" id="todayPresence">0/0</div>
+                    <div class="stat-subtext" id="todayPercentage">0%</div>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-label">This Month</div>
+                    <div class="stat-value" id="monthPresence">0%</div>
+                    <div class="stat-subtext">Average presence</div>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-label">Absent Today</div>
+                    <div class="stat-value" id="absentToday">0</div>
+                    <div class="stat-subtext">Missing employees</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls Section -->
+        <div class="controls-section">
+            <div class="controls-row">
+                <div class="form-group">
+                    <label for="monthInput">Month</label>
+                    <input type="month" id="monthInput" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="searchEmployee">Search Employee</label>
+                    <input type="text" id="searchEmployee" placeholder="Filter by name...">
+                </div>
+
+                <button class="btn-reset" onclick="resetFilters()">Reset Filters</button>
+            </div>
+        </div>
+
+        <!-- Attendance Table -->
+        <div class="table-wrapper">
+            <div class="table-header">
+                <div class="table-title">Attendance Record</div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-box present"></div>
+                        <span>Present</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box absent"></div>
+                        <span>Absent</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box weekend"></div>
+                        <span>Weekend</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                </svg>
+                <h3>No data available</h3>
+            </div>
+
+            <div class="table-scroll">
+                <table id="attendanceTable">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Mon 1</th>
+                            <th>Tue 2</th>
+                            <th>Wed 3</th>
+                            <th>Thu 4</th>
+                            <th>Fri 5</th>
+                            <th>Sat 6</th>
+                            <th>Sun 7</th>
+                            <th>Mon 8</th>
+                            <th>Tue 9</th>
+                            <th>Wed 10</th>
+                            <th>Thu 11</th>
+                            <th>Fri 12</th>
+                            <th>Sat 13</th>
+                            <th>Sun 14</th>
+                            <th>Mon 15</th>
+                            <th>Tue 16</th>
+                            <th>Wed 17</th>
+                            <th>Thu 18</th>
+                            <th>Fri 19</th>
+                            <th>Sat 20</th>
+                            <th>Sun 21</th>
+                            <th>Mon 22</th>
+                            <th>Tue 23</th>
+                            <th>Wed 24</th>
+                            <th>Thu 25</th>
+                            <th>Fri 26</th>
+                            <th>Sat 27</th>
+                            <th>Sun 28</th>
+                            <th>Mon 29</th>
+                            <th>Tue 30</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>John Doe</td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell absent">✗</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell absent">✗</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Jane Smith</td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell absent">✗</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell absent">✗</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Michael Johnson</td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell absent">✗</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell absent">✗</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell absent">✗</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Emily Brown</td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell absent">✗</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>David Wilson</td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell absent">✗</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell absent">✗</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell absent">✗</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell weekend">WE</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                            <td><span class="attendance-cell present">✓</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample employee data
+        const employees = [
+            { id: 1, firstName: 'John', lastName: 'Doe', email: 'john.doe@company.com' },
+            { id: 2, firstName: 'Jane', lastName: 'Smith', email: 'jane.smith@company.com' },
+            { id: 3, firstName: 'Michael', lastName: 'Johnson', email: 'michael.j@company.com' },
+            { id: 4, firstName: 'Emily', lastName: 'Brown', email: 'emily.brown@company.com' },
+            { id: 5, firstName: 'David', lastName: 'Wilson', email: 'david.wilson@company.com' },
+            { id: 6, firstName: 'Sarah', lastName: 'Martinez', email: 'sarah.m@company.com' },
+            { id: 7, firstName: 'Robert', lastName: 'Anderson', email: 'robert.a@company.com' },
+            { id: 8, firstName: 'Lisa', lastName: 'Taylor', email: 'lisa.taylor@company.com' },
+            { id: 9, firstName: 'James', lastName: 'Garcia', email: 'james.garcia@company.com' },
+            { id: 10, firstName: 'Maria', lastName: 'Rodriguez', email: 'maria.r@company.com' },
+        ];
+
+        let absentRateChart = null;
+        let filteredEmployees = [...employees];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            setCurrentMonth();
+            updateStats();
+            initializeChart();
+        });
+
+        function setCurrentMonth() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            document.getElementById('monthInput').value = `${year}-${month}`;
+        }
+
+        function updateStats() {
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+
+            document.getElementById('totalEmployees').textContent = employees.length;
+
+            // Simulate today's attendance
+            const presentToday = Math.floor(Math.random() * employees.length);
+            const absentToday = employees.length - presentToday;
+            const percentage = Math.round((presentToday / employees.length) * 100);
+
+            document.getElementById('todayPresence').textContent = presentToday + '/' + employees.length;
+            document.getElementById('todayPercentage').textContent = percentage + '%';
+            document.getElementById('absentToday').textContent = absentToday;
+
+            // Month average (simulated)
+            const monthAverage = Math.floor(Math.random() * 20) + 80;
+            document.getElementById('monthPresence').textContent = monthAverage + '%';
+        }
+
+        function initializeChart() {
+            const ctx = document.getElementById('absentRateChart').getContext('2d');
+
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const absentRates = [8, 6, 12, 5, 9, 7, 11, 4, 13, 6, 8, 9];
+
+            if (absentRateChart) {
+                absentRateChart.destroy();
+            }
+
+            absentRateChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Absence Rate (%)',
+                        data: absentRates,
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#ef4444',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#909090',
+                                font: { size: 11, weight: '600' },
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)',
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                color: '#606060',
+                                font: { size: 10 },
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)',
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                color: '#606060',
+                                font: { size: 10 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function getDaysInMonth(year, month) {
+            return new Date(year, month, 0).getDate();
+        }
+
+        function isWeekend(date) {
+            const day = date.getDay();
+            return day === 0 || day === 6;
+        }
+
+        function resetFilters() {
+            document.getElementById('searchEmployee').value = '';
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,704 @@
+﻿@page
+@model PrivacyModel
+@{
+    ViewData["Title"] = "Detection";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - FaceCheck</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            color: #e0e0e0;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(0, 255, 255, 0.12) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(138, 43, 226, 0.12) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+            animation: gradientShift 8s ease-in-out infinite;
+        }
+
+        @@keyframes gradientShift {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .header {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            z-index: 10;
+        }
+
+        .header-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: pulse 2s ease-in-out infinite;
+            box-shadow: 0 0 10px rgba(74, 222, 128, 0.6);
+        }
+
+        @@keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.6;
+                transform: scale(1.2);
+            }
+        }
+
+        .detection-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            aspect-ratio: 4/3;
+            margin-bottom: 3rem;
+        }
+
+        .detection-frame {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 20, 0.9);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 
+                0 0 40px rgba(0, 255, 255, 0.2),
+                inset 0 0 40px rgba(0, 255, 255, 0.05),
+                0 0 100px rgba(138, 43, 226, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .detection-frame::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                180deg,
+                rgba(0, 255, 255, 0.1) 0%,
+                rgba(0, 255, 255, 0) 50%,
+                rgba(138, 43, 226, 0.05) 100%
+            );
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .detection-frame::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 50% 0%, rgba(0, 255, 255, 0.3), transparent 70%),
+                radial-gradient(circle at 50% 100%, rgba(138, 43, 226, 0.2), transparent 70%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .video-wrapper {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        #videoElement {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        #videoElement.active {
+            display: block;
+        }
+
+        .fallback-message {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            z-index: 1;
+        }
+
+        .fallback-message.hidden {
+            display: none;
+        }
+
+        .fallback-text {
+            color: #606060;
+            font-size: 1rem;
+        }
+
+        .fallback-icon {
+            width: 64px;
+            height: 64px;
+            stroke: #404040;
+            margin-bottom: 1rem;
+        }
+
+        /* Face detection overlay */
+        .detection-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 55%;
+            height: 65%;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .face-detection-box {
+            width: 100%;
+            height: 100%;
+            border: 3px solid rgba(0, 255, 255, 0.6);
+            border-radius: 20px;
+            box-shadow: 
+                0 0 30px rgba(0, 255, 255, 0.4),
+                inset 0 0 30px rgba(0, 255, 255, 0.1);
+            position: relative;
+            animation: scanLine 3s linear infinite;
+        }
+
+        @@keyframes scanLine {
+            0% {
+                box-shadow: 
+                    0 0 30px rgba(0, 255, 255, 0.4),
+                    inset 0 0 30px rgba(0, 255, 255, 0.1),
+                    0 -40px 60px rgba(0, 255, 255, 0.3) inset;
+            }
+            50% {
+                box-shadow: 
+                    0 0 40px rgba(0, 255, 255, 0.6),
+                    inset 0 0 40px rgba(0, 255, 255, 0.2),
+                    0 0px 60px rgba(0, 255, 255, 0.2) inset;
+            }
+            100% {
+                box-shadow: 
+                    0 0 30px rgba(0, 255, 255, 0.4),
+                    inset 0 0 30px rgba(0, 255, 255, 0.1),
+                    0 40px 60px rgba(0, 255, 255, 0.3) inset;
+            }
+        }
+
+        .corner {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #00ffff;
+        }
+
+        .corner.top-left {
+            top: -6px;
+            left: -6px;
+            border-right: none;
+            border-bottom: none;
+            border-radius: 8px 0 0 0;
+        }
+
+        .corner.top-right {
+            top: -6px;
+            right: -6px;
+            border-left: none;
+            border-bottom: none;
+            border-radius: 0 8px 0 0;
+        }
+
+        .corner.bottom-left {
+            bottom: -6px;
+            left: -6px;
+            border-right: none;
+            border-top: none;
+            border-radius: 0 0 0 8px;
+        }
+
+        .corner.bottom-right {
+            bottom: -6px;
+            right: -6px;
+            border-left: none;
+            border-top: none;
+            border-radius: 0 0 8px 0;
+        }
+
+        /* Scanning line animation */
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(0, 255, 255, 0.8), 
+                transparent);
+            animation: scanning 2s linear infinite;
+        }
+
+        @@keyframes scanning {
+            0% {
+                top: 0%;
+            }
+            100% {
+                top: 100%;
+            }
+        }
+
+        /* Recognition Result */
+        .result-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(20, 20, 35, 0.95);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(0, 255, 255, 0.4);
+            border-radius: 24px;
+            padding: 3rem;
+            text-align: center;
+            min-width: 400px;
+            z-index: 100;
+            display: none;
+            animation: slideIn 0.4s ease-out;
+            box-shadow: 0 0 60px rgba(0, 255, 255, 0.3);
+        }
+
+        @@keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -60%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        .result-popup.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+        }
+
+        .result-icon {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1rem;
+        }
+
+        .result-icon.success {
+            stroke: #4ade80;
+            animation: successPulse 0.6s ease-out;
+        }
+
+        .result-icon.error {
+            stroke: #ef4444;
+            animation: errorShake 0.6s ease-out;
+        }
+
+        @@keyframes successPulse {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            70% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @@keyframes errorShake {
+            0%, 100% {
+                transform: translateX(0);
+            }
+            25% {
+                transform: translateX(-10px);
+            }
+            75% {
+                transform: translateX(10px);
+            }
+        }
+
+        .result-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+
+        .result-title.success {
+            color: #4ade80;
+        }
+
+        .result-title.error {
+            color: #ef4444;
+        }
+
+        .result-message {
+            font-size: 1.2rem;
+            color: #b0b0b0;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-subtext {
+            font-size: 0.9rem;
+            color: #606060;
+        }
+
+        .result-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 99;
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .result-overlay.active {
+            display: block;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Info Section */
+        .info-section {
+            position: absolute;
+            bottom: 2rem;
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .info-box {
+            background: rgba(20, 20, 35, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 1.5rem 2rem;
+            text-align: center;
+        }
+
+        .info-label {
+            color: #909090;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .info-value {
+            color: #00ffff;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .keyboard-hint {
+            position: absolute;
+            bottom: 1rem;
+            right: 2rem;
+            font-size: 0.85rem;
+            color: #606060;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .key-hint {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .key-badge {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            padding: 0.4rem 0.8rem;
+            font-weight: 600;
+            font-size: 0.75rem;
+            color: #b0b0b0;
+        }
+
+        @@media (max-width: 768px) {
+            .detection-container {
+                max-width: 100%;
+            }
+
+            .result-popup {
+                min-width: 90%;
+                max-width: 500px;
+                padding: 2rem;
+            }
+
+            .info-section {
+                flex-direction: column;
+                gap: 1rem;
+                bottom: 1rem;
+            }
+
+            .keyboard-hint {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="status-indicator"></div>
+            <div class="header-title">Face Recognition System</div>
+        </div>
+
+        <div class="detection-container">
+            <div class="detection-frame">
+                <div class="video-wrapper">
+                    <video id="videoElement" autoplay playsinline></video>
+                    <div class="fallback-message">
+                        <div>
+                            <svg class="fallback-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
+                            </svg>
+                            <p class="fallback-text">Camera access required</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detection-overlay">
+                    <div class="face-detection-box">
+                        <div class="scan-line"></div>
+                        <div class="corner top-left"></div>
+                        <div class="corner top-right"></div>
+                        <div class="corner bottom-left"></div>
+                        <div class="corner bottom-right"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-box">
+                <div class="info-label">Status</div>
+                <div class="info-value" id="statusValue">Scanning...</div>
+            </div>
+            <div class="info-box">
+                <div class="info-label">Confidence</div>
+                <div class="info-value" id="confidenceValue">--</div>
+            </div>
+        </div>
+
+        <div class="keyboard-hint">
+            <div class="key-hint">
+                <span class="key-badge">T</span>
+                <span>Simulate Recognition</span>
+            </div>
+            <div class="key-hint">
+                <span class="key-badge">F</span>
+                <span>Simulate Failure</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Overlay -->
+    <div class="result-overlay" id="resultOverlay"></div>
+
+    <!-- Result Popup -->
+    <div class="result-popup" id="resultPopup">
+        <svg class="result-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path id="resultIcon"></path>
+        </svg>
+        <div class="result-title" id="resultTitle">Welcome</div>
+        <div class="result-message" id="resultMessage">Face recognized successfully</div>
+        <div class="result-subtext" id="resultSubtext">Access granted</div>
+    </div>
+
+    <script>
+        const videoElement = document.getElementById('videoElement');
+        const fallbackMessage = document.querySelector('.fallback-message');
+        const resultPopup = document.getElementById('resultPopup');
+        const resultOverlay = document.getElementById('resultOverlay');
+        const statusValue = document.getElementById('statusValue');
+        const confidenceValue = document.getElementById('confidenceValue');
+
+        // Initialize camera on page load
+        async function initCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        facingMode: 'user'
+                    }
+                });
+
+                videoElement.srcObject = stream;
+                videoElement.classList.add('active');
+                fallbackMessage.classList.add('hidden');
+                statusValue.textContent = 'Ready';
+            } catch (error) {
+                console.error('Camera error:', error);
+                fallbackMessage.classList.remove('hidden');
+                statusValue.textContent = 'Camera Error';
+            }
+        }
+
+        // Show recognition result
+        function showResult(isSuccess, name = 'Unknown') {
+            const resultTitle = document.getElementById('resultTitle');
+            const resultMessage = document.getElementById('resultMessage');
+            const resultSubtext = document.getElementById('resultSubtext');
+            const resultIcon = document.getElementById('resultIcon');
+            const icon = document.querySelector('.result-icon');
+
+            resultPopup.classList.add('active');
+            resultOverlay.classList.add('active');
+
+            if (isSuccess) {
+                resultTitle.textContent = `Welcome ${name}`;
+                resultTitle.classList.remove('error');
+                resultTitle.classList.add('success');
+                resultMessage.textContent = 'Face recognized successfully';
+                resultSubtext.textContent = 'Access granted • Welcome back!';
+                icon.classList.remove('error');
+                icon.classList.add('success');
+                
+                // Success checkmark
+                resultIcon.setAttribute('d', 'M9 16.17L4.83 12m0 0l-1.42 1.41L9 19 21 7m0 0l-1.41-1.41L9 16.17');
+                
+                // Play success sound (optional - commented for accessibility)
+                // playSuccessSound();
+            } else {
+                resultTitle.textContent = 'Access Denied';
+                resultTitle.classList.remove('success');
+                resultTitle.classList.add('error');
+                resultMessage.textContent = 'Face not recognized';
+                resultSubtext.textContent = 'Please ring the doorbell for assistance';
+                icon.classList.remove('success');
+                icon.classList.add('error');
+                
+                // Error cross
+                resultIcon.setAttribute('d', 'M6 18L18 6M6 6l12 12');
+                
+                // Play error sound (optional - commented for accessibility)
+                // playErrorSound();
+            }
+
+            // Auto-hide after 3 seconds
+            setTimeout(hideResult, 3000);
+        }
+
+        function hideResult() {
+            resultPopup.classList.remove('active');
+            resultOverlay.classList.remove('active');
+        }
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === 't') {
+                showResult(true, 'To Mamiarilaza');
+            } else if (e.key.toLowerCase() === 'f') {
+                showResult(false);
+            }
+        });
+
+        // Simulate confidence updates
+        function updateConfidence() {
+            const confidence = Math.floor(Math.random() * 40) + 60;
+            confidenceValue.textContent = confidence + '%';
+        }
+
+        setInterval(updateConfidence, 2000);
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', initCamera);
+
+        // Cleanup on unload
+        window.addEventListener('beforeunload', () => {
+            if (videoElement.srcObject) {
+                videoElement.srcObject.getTracks().forEach(track => track.stop());
+            }
+        });
+    </script>
+</body>
+</html>
