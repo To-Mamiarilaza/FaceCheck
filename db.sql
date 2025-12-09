@@ -9,6 +9,7 @@ CREATE TABLE Persons (
     Firstname VARCHAR(50) NOT NULL,
     Lastname VARCHAR(255) NOT NULL,
     Email VARCHAR(100) NOT NULL UNIQUE,
+    Status INT DEFAULT 10,
     CreatedAt DATETIME DEFAULT GETDATE()
 );
 
@@ -79,4 +80,14 @@ VALUES
 (4, '2025-12-05 08:07:00'),
 (5, '2025-12-05 08:22:00');
 
+GO
+
+-- More persons sample data for pagination testing
+INSERT INTO Persons (Firstname, Lastname, Email)
+VALUES 
+('Fiona', 'Miller', 'fiona.miller@example.com'),
+('George', 'Wilson', 'george.wilson@example.com'),
+('Hannah', 'Moore', 'hannah.moore@example.com'),
+('Ian', 'Taylor', 'ian.taylor@example.com'),
+('Julia', 'Anderson', 'julia.anderson@example.com');
 GO
