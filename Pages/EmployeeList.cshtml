@@ -2,10 +2,21 @@
 @model EmployeeListModel
 @{
     ViewData["Title"] = "Employee List";
+    
+    // Helper method to generate page URLs with search parameter
+    string GetPageUrl(int pageNumber)
+    {
+        if (string.IsNullOrEmpty(Model.SearchTerm))
+        {
+            return Url.Page("/EmployeeList", new { pageNumber });
+        }
+        return Url.Page("/EmployeeList", new { pageNumber, search = Model.SearchTerm });
+    }
 }
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -29,7 +40,7 @@
             position: fixed;
             width: 100%;
             height: 100%;
-            background: 
+            background:
                 radial-gradient(circle at 20% 50%, rgba(0, 255, 255, 0.08) 0%, transparent 50%),
                 radial-gradient(circle at 80% 80%, rgba(138, 43, 226, 0.08) 0%, transparent 50%);
             pointer-events: none;
@@ -295,6 +306,23 @@
             border-color: rgba(239, 68, 68, 0.3);
         }
 
+        .btn-reactivate {
+            padding: 0.5rem 1rem;
+            background: rgba(34, 197, 94, 0.1);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-reactivate:hover {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+
         .pagination-wrapper {
             display: flex;
             align-items: center;
@@ -333,6 +361,7 @@
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s ease;
+            text-decoration: none;
         }
 
         .page-btn:hover:not(:disabled):not(.active) {
@@ -374,14 +403,78 @@
             color: #606060;
             font-size: 0.95rem;
         }
+
+        .notification {
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .notification-success {
+            background: rgba(34, 197, 94, 0.1);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .notification-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .notification-close {
+            background: none;
+            border: none;
+            color: currentColor;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 0;
+            margin-left: auto;
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
+        @{
+            var importMessage = TempData["ImportMessage"] as string;
+            var importError = TempData["ImportError"] as string;
+            var importErrors = TempData["ImportErrors"] as string;
+        }
+
+        @if (!string.IsNullOrEmpty(importMessage))
+        {
+            <div class="notification notification-success" id="successNotification">
+                <div style="flex: 1;">
+                    <strong>Import Successful</strong>
+                    <p>@importMessage</p>
+                    @if (!string.IsNullOrEmpty(importErrors))
+                    {
+                        <small style="display: block; margin-top: 0.5rem; opacity: 0.9;">Errors: @importErrors</small>
+                    }
+                </div>
+                <button class="notification-close" onclick="document.getElementById('successNotification').style.display='none';">×</button>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(importError))
+        {
+            <div class="notification notification-error" id="errorNotification">
+                <div style="flex: 1;">
+                    <strong>Import Failed</strong>
+                    <p>@importError</p>
+                </div>
+                <button class="notification-close" onclick="document.getElementById('errorNotification').style.display='none';">×</button>
+            </div>
+        }
+
         <div class="header">
             <a href="#" class="back-btn" onclick="goBack()">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
                 Back
             </a>
@@ -391,26 +484,38 @@
 
         <div class="controls-section">
             <div class="controls-row">
-                <div class="search-container">
-                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="8"/>
-                        <path d="M21 21l-4.35-4.35"/>
-                    </svg>
-                    <input type="text" class="search-input" id="searchInput" placeholder="Search employees...">
-                </div>
+                <form method="get" style="display: flex; gap: 1rem; align-items: center; flex: 1; max-width: 400px;">
+                    <div class="search-container" style="flex: 1;">
+                        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8" />
+                            <path d="M21 21l-4.35-4.35" />
+                        </svg>
+                        <input type="text" class="search-input" id="searchInput" name="search" placeholder="Search employees..." value="@Model.SearchTerm">
+                    </div>
+                    <button type="submit" style="padding: 0.875rem 1.5rem; background: rgba(0, 255, 255, 0.15); color: #00ffff; border: 1px solid rgba(0, 255, 255, 0.3); border-radius: 10px; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: all 0.2s ease;">
+                        Search
+                    </button>
+                </form>
                 <div class="button-group">
-                    <button class="btn btn-secondary" onclick="importData()">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                        </svg>
-                        Import
-                    </button>
-                    <button class="btn btn-primary" onclick="exportData()">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3v-12"/>
-                        </svg>
-                        Export
-                    </button>
+                    <form id="importForm" method="post" asp-page-handler="Import" enctype="multipart/form-data" style="display: inline;">
+                        <input type="file" id="importFile" name="ImportFile" accept=".csv" style="display: none;" onchange="this.form.submit();" />
+                        <button type="button" class="btn btn-secondary" onclick="document.getElementById('importFile').click();">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                            </svg>
+                            Import
+                        </button>
+                    </form>
+                    <form method="post" asp-page-handler="Export" style="display: inline;">
+                        <button type="submit" class="btn btn-primary">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3v-12" />
+                            </svg>
+                            Export
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -428,11 +533,59 @@
                     </tr>
                 </thead>
                 <tbody id="tableBody">
+                    @foreach (var person in Model.Persons)
+                    {
+                        <tr>
+                            <td>
+                                <div class="avatar">
+                                    @{
+                                        var firstInitial = !string.IsNullOrEmpty(person.Firstname) ? person.Firstname[0] : '-';
+                                        var lastInitial = !string.IsNullOrEmpty(person.Lastname) ? person.Lastname[0] : '-';
+                                    }
+                                    @firstInitial @lastInitial
+                                </div>
+                            </td>
+                            <td>
+                                <div class="employee-name">@person.Firstname @person.Lastname</div>
+                            </td>
+                            <td>
+                                <div class="employee-email">@person.Email</div>
+                            </td>
+                            <td>
+                                @{
+                                    var status = person.Status == 10 ? "Active" : "Inactive";
+                                    var statusClass = person.Status == 10 ? "active" : "inactive";
+                                }
+                                <span class="badge badge-@statusClass">
+                                    <span class="status-dot"></span>
+                                    @status
+                                </span>
+                            </td>
+                            <td>@person.CreatedAt.ToString("MMM dd, yyyy")</td>
+                            <td style="text-align: center;">
+                                @{
+                                    var isInactive = person.Status == 0;
+                                    var buttonText = isInactive ? "Reactivate" : "Delete";
+                                    var buttonClass = isInactive ? "btn-reactivate" : "btn-delete";
+                                    var action = isInactive ? "reactivate" : "delete";
+                                    var confirmMessage = isInactive ? "Are you sure you want to reactivate this employee?" : "Are you sure you want to delete this employee?";
+                                }
+                                <form method="post" style="display: inline;" onsubmit="return confirm('@confirmMessage');">
+                                    <input type="hidden" name="employeeId" value="@person.Id" />
+                                    <input type="hidden" name="action" value="@action" />
+                                    <input type="hidden" name="pageNumber" value="@Model.CurrentPage" />
+                                    <input type="hidden" name="search" value="@Model.SearchTerm" />
+                                    <button type="submit" class="@buttonClass">@buttonText</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
                 </tbody>
             </table>
             <div id="emptyState" class="empty-state" style="display: none;">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                 </svg>
                 <h3>No employees found</h3>
                 <p>Try adjusting your search criteria</p>
@@ -441,183 +594,71 @@
 
         <div class="pagination-wrapper">
             <div class="pagination-info">
-                Showing <span id="showingStart">1</span>-<span id="showingEnd">5</span> of <span id="totalItems">0</span> employees
+                Showing 
+                <span id="showingStart">@((Model.CurrentPage - 1) * Model.PageSize + (Model.Persons.Count > 0 ? 1 : 0))</span>-<span id="showingEnd">@((Model.CurrentPage - 1) * Model.PageSize + Model.Persons.Count)</span> 
+                of 
+                <span id="totalItems">@Model.TotalCount</span> employees
             </div>
             <div class="pagination-controls">
-                <button class="page-btn" id="prevBtn" onclick="changePage(-1)">
+                <a href="@GetPageUrl(Model.CurrentPage - 1)" 
+                   class="page-btn" 
+                   id="prevBtn" 
+                   @(Model.CurrentPage == 1 ? "onclick=\"return false;\" style=\"opacity: 0.4; cursor: not-allowed;\"" : "")>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
-                </button>
-                <div id="pageNumbers" style="display: flex; gap: 0.5rem;"></div>
-                <button class="page-btn" id="nextBtn" onclick="changePage(1)">
+                </a>
+                <div id="pageNumbers" style="display: flex; gap: 0.5rem;">
+                    @{
+                        int startPage = Math.Max(1, Model.CurrentPage - 2);
+                        int endPage = Math.Min(Model.TotalPages, startPage + 4);
+                        if (endPage - startPage < 4)
+                        {
+                            startPage = Math.Max(1, endPage - 4);
+                        }
+
+                        for (int i = startPage; i <= endPage; i++)
+                        {
+                            <a href="@GetPageUrl(i)" class="page-btn @(i == Model.CurrentPage ? "active" : "")">@i</a>
+                        }
+                    }
+                </div>
+                <a href="@GetPageUrl(Model.CurrentPage + 1)" 
+                   class="page-btn" 
+                   id="nextBtn" 
+                   @(Model.CurrentPage == Model.TotalPages || Model.TotalPages == 0 ? "onclick=\"return false;\" style=\"opacity: 0.4; cursor: not-allowed;\"" : "")>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                     </svg>
-                </button>
+                </a>
             </div>
         </div>
     </div>
 
     <script>
-        let allEmployees = [
-            { id: 1, firstName: 'John', lastName: 'Doe', email: 'john.doe@company.com', status: 'active', registered: '2024-11-15' },
-            { id: 2, firstName: 'Jane', lastName: 'Smith', email: 'jane.smith@company.com', status: 'active', registered: '2024-11-20' },
-            { id: 3, firstName: 'Michael', lastName: 'Johnson', email: 'michael.j@company.com', status: 'inactive', registered: '2024-10-05' },
-            { id: 4, firstName: 'Emily', lastName: 'Brown', email: 'emily.brown@company.com', status: 'active', registered: '2024-11-28' },
-            { id: 5, firstName: 'David', lastName: 'Wilson', email: 'david.wilson@company.com', status: 'active', registered: '2024-11-10' },
-            { id: 6, firstName: 'Sarah', lastName: 'Martinez', email: 'sarah.m@company.com', status: 'active', registered: '2024-11-22' },
-            { id: 7, firstName: 'Robert', lastName: 'Anderson', email: 'robert.a@company.com', status: 'inactive', registered: '2024-09-15' },
-            { id: 8, firstName: 'Lisa', lastName: 'Taylor', email: 'lisa.taylor@company.com', status: 'active', registered: '2024-11-30' },
-            { id: 9, firstName: 'James', lastName: 'Garcia', email: 'james.garcia@company.com', status: 'active', registered: '2024-12-01' },
-            { id: 10, firstName: 'Maria', lastName: 'Rodriguez', email: 'maria.r@company.com', status: 'active', registered: '2024-11-25' },
-            { id: 11, firstName: 'William', lastName: 'Martinez', email: 'william.m@company.com', status: 'inactive', registered: '2024-10-20' },
-            { id: 12, firstName: 'Patricia', lastName: 'Hernandez', email: 'patricia.h@company.com', status: 'active', registered: '2024-11-18' },
-        ];
-
-        let filteredEmployees = [...allEmployees];
-        let currentPage = 1;
-        const itemsPerPage = 8;
-
-        function renderTable() {
-            const tableBody = document.getElementById('tableBody');
-            const emptyState = document.getElementById('emptyState');
-            const startIndex = (currentPage - 1) * itemsPerPage;
-            const endIndex = startIndex + itemsPerPage;
-            const pageData = filteredEmployees.slice(startIndex, endIndex);
-
-            if (filteredEmployees.length === 0) {
-                tableBody.innerHTML = '';
-                emptyState.style.display = 'block';
-                updatePaginationInfo();
-                return;
-            }
-
-            emptyState.style.display = 'none';
-            tableBody.innerHTML = pageData.map(emp => `
-                <tr>
-                    <td>
-                        <div class="avatar">${emp.firstName.charAt(0)}${emp.lastName.charAt(0)}</div>
-                    </td>
-                    <td>
-                        <div class="employee-name">${emp.firstName} ${emp.lastName}</div>
-                    </td>
-                    <td>
-                        <div class="employee-email">${emp.email}</div>
-                    </td>
-                    <td>
-                        <span class="badge badge-${emp.status}">
-                            <span class="status-dot"></span>
-                            ${emp.status.charAt(0).toUpperCase() + emp.status.slice(1)}
-                        </span>
-                    </td>
-                    <td>${new Date(emp.registered).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
-                    <td style="text-align: center;">
-                        <button class="btn-delete" onclick="deleteEmployee(${emp.id})">Delete</button>
-                    </td>
-                </tr>
-            `).join('');
-
-            updatePaginationInfo();
-        }
-
-        function updatePaginationInfo() {
-            const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
-            const startIndex = (currentPage - 1) * itemsPerPage + 1;
-            const endIndex = Math.min(currentPage * itemsPerPage, filteredEmployees.length);
-
-            document.getElementById('showingStart').textContent = filteredEmployees.length > 0 ? startIndex : 0;
-            document.getElementById('showingEnd').textContent = endIndex;
-            document.getElementById('totalItems').textContent = filteredEmployees.length;
-            document.getElementById('prevBtn').disabled = currentPage === 1;
-            document.getElementById('nextBtn').disabled = currentPage === totalPages || totalPages === 0;
-
-            const pageNumbers = document.getElementById('pageNumbers');
-            pageNumbers.innerHTML = '';
-            
-            const maxVisible = 5;
-            let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-            let endPage = Math.min(totalPages, startPage + maxVisible - 1);
-            
-            if (endPage - startPage < maxVisible - 1) {
-                startPage = Math.max(1, endPage - maxVisible + 1);
-            }
-
-            for (let i = startPage; i <= endPage; i++) {
-                const btn = document.createElement('button');
-                btn.className = 'page-btn' + (i === currentPage ? ' active' : '');
-                btn.textContent = i;
-                btn.onclick = () => goToPage(i);
-                pageNumbers.appendChild(btn);
-            }
-        }
-
-        function changePage(direction) {
-            const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
-            currentPage = Math.max(1, Math.min(totalPages, currentPage + direction));
-            renderTable();
-        }
-
-        function goToPage(page) {
-            currentPage = page;
-            renderTable();
-        }
-
-        function deleteEmployee(id) {
-            if (confirm('Are you sure you want to delete this employee? This action cannot be undone.')) {
-                allEmployees = allEmployees.filter(emp => emp.id !== id);
-                filteredEmployees = filteredEmployees.filter(emp => emp.id !== id);
-                
-                const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
-                if (currentPage > totalPages && totalPages > 0) {
-                    currentPage = totalPages;
-                }
-                
-                renderTable();
-            }
-        }
-
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            filteredEmployees = allEmployees.filter(emp => 
-                emp.firstName.toLowerCase().includes(searchTerm) ||
-                emp.lastName.toLowerCase().includes(searchTerm) ||
-                emp.email.toLowerCase().includes(searchTerm)
-            );
-            currentPage = 1;
-            renderTable();
-        });
-
-        function importData() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.json,.csv';
-            input.onchange = (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    console.log('Importing file:', file.name);
-                    alert('Import functionality\n\nFile: ' + file.name + '\nImplement your import logic here.');
-                }
-            };
-            input.click();
-        }
-
-        function exportData() {
-            const dataStr = JSON.stringify(allEmployees, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `employees_export_${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
+        // Navigate back
         function goBack() {
             window.history.back();
         }
 
-        renderTable();
+        // Auto-hide notifications after 10 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const successNotif = document.getElementById('successNotification');
+            const errorNotif = document.getElementById('errorNotification');
+            
+            if (successNotif) {
+                setTimeout(() => {
+                    successNotif.style.display = 'none';
+                }, 10000);
+            }
+            
+            if (errorNotif) {
+                setTimeout(() => {
+                    errorNotif.style.display = 'none';
+                }, 10000);
+            }
+        });
     </script>
 </body>
+
 </html>
