@@ -403,11 +403,74 @@
             color: #606060;
             font-size: 0.95rem;
         }
+
+        .notification {
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .notification-success {
+            background: rgba(34, 197, 94, 0.1);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .notification-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .notification-close {
+            background: none;
+            border: none;
+            color: currentColor;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 0;
+            margin-left: auto;
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
+        @{
+            var importMessage = TempData["ImportMessage"] as string;
+            var importError = TempData["ImportError"] as string;
+            var importErrors = TempData["ImportErrors"] as string;
+        }
+
+        @if (!string.IsNullOrEmpty(importMessage))
+        {
+            <div class="notification notification-success" id="successNotification">
+                <div style="flex: 1;">
+                    <strong>Import Successful</strong>
+                    <p>@importMessage</p>
+                    @if (!string.IsNullOrEmpty(importErrors))
+                    {
+                        <small style="display: block; margin-top: 0.5rem; opacity: 0.9;">Errors: @importErrors</small>
+                    }
+                </div>
+                <button class="notification-close" onclick="document.getElementById('successNotification').style.display='none';">×</button>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(importError))
+        {
+            <div class="notification notification-error" id="errorNotification">
+                <div style="flex: 1;">
+                    <strong>Import Failed</strong>
+                    <p>@importError</p>
+                </div>
+                <button class="notification-close" onclick="document.getElementById('errorNotification').style.display='none';">×</button>
+            </div>
+        }
+
         <div class="header">
             <a href="#" class="back-btn" onclick="goBack()">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -434,20 +497,25 @@
                     </button>
                 </form>
                 <div class="button-group">
-                    <button class="btn btn-secondary" onclick="importData()">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                        </svg>
-                        Import
-                    </button>
-                    <button class="btn btn-primary" onclick="exportData()">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3v-12" />
-                        </svg>
-                        Export
-                    </button>
+                    <form id="importForm" method="post" asp-page-handler="Import" enctype="multipart/form-data" style="display: inline;">
+                        <input type="file" id="importFile" name="ImportFile" accept=".csv" style="display: none;" onchange="this.form.submit();" />
+                        <button type="button" class="btn btn-secondary" onclick="document.getElementById('importFile').click();">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                            </svg>
+                            Import
+                        </button>
+                    </form>
+                    <form method="post" asp-page-handler="Export" style="display: inline;">
+                        <button type="submit" class="btn btn-primary">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3v-12" />
+                            </svg>
+                            Export
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -566,6 +634,31 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Navigate back
+        function goBack() {
+            window.history.back();
+        }
+
+        // Auto-hide notifications after 10 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const successNotif = document.getElementById('successNotification');
+            const errorNotif = document.getElementById('errorNotification');
+            
+            if (successNotif) {
+                setTimeout(() => {
+                    successNotif.style.display = 'none';
+                }, 10000);
+            }
+            
+            if (errorNotif) {
+                setTimeout(() => {
+                    errorNotif.style.display = 'none';
+                }, 10000);
+            }
+        });
+    </script>
 </body>
 
 </html>
