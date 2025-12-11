@@ -7,6 +7,7 @@ using FaceCheck.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddControllers();
 builder.Services.AddRazorPages();
 builder.Services.AddControllers();
 
@@ -38,6 +39,9 @@ builder.Services.AddAuthentication("Bearer")
 // Add services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IStatisticsService, StatisticsService>();
+builder.Services.AddScoped<FaceRecognitionService>();
+builder.Services.AddScoped<AttendanceService>();
+builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
@@ -57,7 +61,8 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapRazorPages();
+
+app.MapRazorPages();      
 app.MapControllers();
 
 app.Run();

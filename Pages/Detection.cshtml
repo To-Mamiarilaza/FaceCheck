@@ -524,7 +524,7 @@
         }
     </style>
 </head>
-<body>
+   <body>
     <div class="container">
         <div class="header">
             <div class="status-indicator"></div>
@@ -540,7 +540,7 @@
                             <svg class="fallback-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
                             </svg>
-                            <p class="fallback-text">Camera access required</p>
+                            <p class="fallback-text">Autorisation caméra requise</p>
                         </div>
                     </div>
                 </div>
@@ -559,38 +559,25 @@
 
         <div class="info-section">
             <div class="info-box">
-                <div class="info-label">Status</div>
-                <div class="info-value" id="statusValue">Scanning...</div>
+                <div class="info-label">Statut</div>
+                <div class="info-value" id="statusValue">Initialisation...</div>
             </div>
             <div class="info-box">
-                <div class="info-label">Confidence</div>
+                <div class="info-label">Confiance</div>
                 <div class="info-value" id="confidenceValue">--</div>
-            </div>
-        </div>
-
-        <div class="keyboard-hint">
-            <div class="key-hint">
-                <span class="key-badge">T</span>
-                <span>Simulate Recognition</span>
-            </div>
-            <div class="key-hint">
-                <span class="key-badge">F</span>
-                <span>Simulate Failure</span>
             </div>
         </div>
     </div>
 
-    <!-- Result Overlay -->
+    <!-- Overlay + Popup résultat -->
     <div class="result-overlay" id="resultOverlay"></div>
-
-    <!-- Result Popup -->
     <div class="result-popup" id="resultPopup">
         <svg class="result-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path id="resultIcon"></path>
         </svg>
-        <div class="result-title" id="resultTitle">Welcome</div>
-        <div class="result-message" id="resultMessage">Face recognized successfully</div>
-        <div class="result-subtext" id="resultSubtext">Access granted</div>
+        <div class="result-title" id="resultTitle">Analyse en cours</div>
+        <div class="result-message" id="resultMessage">Veuillez patienter...</div>
+        <div class="result-subtext" id="resultSubtext"></div>
     </div>
 
     <script>
@@ -601,104 +588,113 @@
         const statusValue = document.getElementById('statusValue');
         const confidenceValue = document.getElementById('confidenceValue');
 
-        // Initialize camera on page load
+        let stream = null;
+        let captureInterval = null;
+
+        // Initialisation caméra
         async function initCamera() {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 },
-                        facingMode: 'user'
-                    }
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" }
                 });
-
                 videoElement.srcObject = stream;
                 videoElement.classList.add('active');
                 fallbackMessage.classList.add('hidden');
-                statusValue.textContent = 'Ready';
-            } catch (error) {
-                console.error('Camera error:', error);
+                statusValue.textContent = 'Analyse en cours...';
+
+                // Démarre l'envoi automatique toutes les 2 secondes
+                captureInterval = setInterval(captureAndSend, 2000000000000);
+            } catch (err) {
+                console.error("Erreur caméra :", err);
                 fallbackMessage.classList.remove('hidden');
-                statusValue.textContent = 'Camera Error';
+                statusValue.textContent = 'Caméra indisponible';
             }
         }
 
-        // Show recognition result
-        function showResult(isSuccess, name = 'Unknown') {
-            const resultTitle = document.getElementById('resultTitle');
-            const resultMessage = document.getElementById('resultMessage');
-            const resultSubtext = document.getElementById('resultSubtext');
-            const resultIcon = document.getElementById('resultIcon');
+        // Capture + envoi réel au backend
+        async function captureAndSend() {
+            if (!videoElement.videoWidth || !videoElement.videoHeight) return;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = videoElement.videoWidth;
+            canvas.height = videoElement.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(videoElement, 0, 0);
+
+            const imageBase64 = canvas.toDataURL('image/jpeg', 0.8); // qualité 80%
+
+            try {
+                const response = await fetch('/api/face/detect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ImageBase64: imageBase64.split(',')[1] // on enlève le préfixe data:image/jpeg;base64,
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    // Succès : personne reconnue
+                    showResult(true, result.name || "Utilisateur", result.confidence || 0);
+                } else {
+                    // Échec ou personne inconnue
+                    const message = result.message || "Personne non reconnue";
+                    const confidence = result.confidence || 0;
+                    showResult(false, null, confidence, message);
+                }
+            } catch (err) {
+                console.error("Erreur envoi image :", err);
+                // Optionnel : montrer une erreur temporaire
+            }
+        }
+
+        // Affichage du popup de résultat
+        function showResult(success, name = null, confidence = 0, customMessage = null) {
+            const title = document.getElementById('resultTitle');
+            const message = document.getElementById('resultMessage');
+            const subtext = document.getElementById('resultSubtext');
+            const iconPath = document.getElementById('resultIcon');
             const icon = document.querySelector('.result-icon');
 
             resultPopup.classList.add('active');
             resultOverlay.classList.add('active');
 
-            if (isSuccess) {
-                resultTitle.textContent = `Welcome ${name}`;
-                resultTitle.classList.remove('error');
-                resultTitle.classList.add('success');
-                resultMessage.textContent = 'Face recognized successfully';
-                resultSubtext.textContent = 'Access granted • Welcome back!';
-                icon.classList.remove('error');
-                icon.classList.add('success');
-                
-                // Success checkmark
-                resultIcon.setAttribute('d', 'M9 16.17L4.83 12m0 0l-1.42 1.41L9 19 21 7m0 0l-1.41-1.41L9 16.17');
-                
-                // Play success sound (optional - commented for accessibility)
-                // playSuccessSound();
+            if (success) {
+                title.textContent = name ? `Bienvenue ${name}` : "Accès autorisé";
+                title.className = "result-title success";
+                message.textContent = customMessage || "Visage reconnu avec succès";
+                subtext.textContent = `Confiance : ${confidence.toFixed(1)}%`;
+                icon.className = "result-icon success";
+                iconPath.setAttribute('d', 'M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17');
             } else {
-                resultTitle.textContent = 'Access Denied';
-                resultTitle.classList.remove('success');
-                resultTitle.classList.add('error');
-                resultMessage.textContent = 'Face not recognized';
-                resultSubtext.textContent = 'Please ring the doorbell for assistance';
-                icon.classList.remove('success');
-                icon.classList.add('error');
-                
-                // Error cross
-                resultIcon.setAttribute('d', 'M6 18L18 6M6 6l12 12');
-                
-                // Play error sound (optional - commented for accessibility)
-                // playErrorSound();
+                title.textContent = "Accès refusé";
+                title.className = "result-title error";
+                message.textContent = customMessage || "Visage non reconnu";
+                subtext.textContent = confidence > 0 ? `Confiance max : ${confidence.toFixed(1)}%` : "Aucun visage détecté";
+                icon.className = "result-icon error";
+                iconPath.setAttribute('d', 'M6 18L18 6M6 6l12 12');
             }
 
-            // Auto-hide after 3 seconds
-            setTimeout(hideResult, 3000);
+            confidenceValue.textContent = confidence > 0 ? `${confidence.toFixed(1)}%` : '--';
+
+            // Masque le popup après 4 secondes
+            setTimeout(() => {
+                resultPopup.classList.remove('active');
+                resultOverlay.classList.remove('active');
+            }, 4000);
         }
 
-        function hideResult() {
-            resultPopup.classList.remove('active');
-            resultOverlay.classList.remove('active');
-        }
-
-        // Keyboard controls
-        document.addEventListener('keydown', (e) => {
-            if (e.key.toLowerCase() === 't') {
-                showResult(true, 'To Mamiarilaza');
-            } else if (e.key.toLowerCase() === 'f') {
-                showResult(false);
-            }
-        });
-
-        // Simulate confidence updates
-        function updateConfidence() {
-            const confidence = Math.floor(Math.random() * 40) + 60;
-            confidenceValue.textContent = confidence + '%';
-        }
-
-        setInterval(updateConfidence, 2000);
-
-        // Initialize on load
-        window.addEventListener('DOMContentLoaded', initCamera);
-
-        // Cleanup on unload
+        // Nettoyage à la fermeture
         window.addEventListener('beforeunload', () => {
-            if (videoElement.srcObject) {
-                videoElement.srcObject.getTracks().forEach(track => track.stop());
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
             }
+            if (captureInterval) clearInterval(captureInterval);
         });
+
+        // Démarrage au chargement
+        window.addEventListener('DOMContentLoaded', initCamera);
     </script>
 </body>
 </html>
