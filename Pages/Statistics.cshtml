@@ -6,6 +6,7 @@
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -231,6 +232,34 @@
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 16px;
             overflow: hidden;
+            position: relative;
+        }
+
+        .table-wrapper::after {
+            content: '← Swipe →';
+            position: absolute;
+            right: 20px;
+            bottom: 15px;
+            color: rgba(0, 255, 255, 0.6);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            animation: fadeInOut 3s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        .table-wrapper::before {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 40px;
+            background: linear-gradient(to left, rgba(20, 20, 35, 0.9), transparent);
+            pointer-events: none;
+            z-index: 2;
         }
 
         .table-header {
@@ -286,44 +315,19 @@
             overflow-x: auto;
             scrollbar-width: none;
             -ms-overflow-style: none;
-            position: relative;
         }
 
         .table-scroll::-webkit-scrollbar {
-            display: none;
-        }
-
-        .table-scroll::after {
-            content: '← Swipe →';
-            position: absolute;
-            right: 20px;
-            bottom: 15px;
-            color: rgba(0, 255, 255, 0.6);
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            animation: fadeInOut 3s ease-in-out infinite;
-            pointer-events: none;
-            z-index: 3;
-        }
-
-        .table-scroll::before {
-            content: '';
-            position: absolute;
-            right: 0;
-            top: 0;
-            bottom: 0;
-            width: 40px;
-            background: linear-gradient(to left, rgba(20, 20, 35, 0.9), transparent);
-            pointer-events: none;
-            z-index: 2;
+            @* display: none; *@
         }
 
         @@keyframes fadeInOut {
-            0%, 100% {
+
+            0%,
+            100% {
                 opacity: 0.3;
             }
+
             50% {
                 opacity: 0.8;
             }
@@ -364,12 +368,17 @@
 
         td:first-child {
             text-align: left;
-            font-weight: 500;
+            font-weight: 400;
             color: #ffffff;
             position: sticky;
             left: 0;
             background: rgba(20, 20, 35, 0.9);
             z-index: 1;
+
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         tbody tr:hover {
@@ -426,12 +435,13 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
             <a href="#" class="back-btn" onclick="goBack()">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
                 Back
             </a>
@@ -444,7 +454,7 @@
             <div class="card">
                 <div class="card-title">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 12h18M3 6h18M3 18h18"/>
+                        <path d="M3 12h18M3 6h18M3 18h18" />
                     </svg>
                     Monthly Absence Rate
                 </div>
@@ -520,7 +530,8 @@
 
             <div id="emptyState" class="empty-state" style="display: none;">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                 </svg>
                 <h3>No data available</h3>
             </div>
@@ -530,204 +541,39 @@
                     <thead>
                         <tr>
                             <th>Employee</th>
-                            <th>Mon 1</th>
-                            <th>Tue 2</th>
-                            <th>Wed 3</th>
-                            <th>Thu 4</th>
-                            <th>Fri 5</th>
-                            <th>Sat 6</th>
-                            <th>Sun 7</th>
-                            <th>Mon 8</th>
-                            <th>Tue 9</th>
-                            <th>Wed 10</th>
-                            <th>Thu 11</th>
-                            <th>Fri 12</th>
-                            <th>Sat 13</th>
-                            <th>Sun 14</th>
-                            <th>Mon 15</th>
-                            <th>Tue 16</th>
-                            <th>Wed 17</th>
-                            <th>Thu 18</th>
-                            <th>Fri 19</th>
-                            <th>Sat 20</th>
-                            <th>Sun 21</th>
-                            <th>Mon 22</th>
-                            <th>Tue 23</th>
-                            <th>Wed 24</th>
-                            <th>Thu 25</th>
-                            <th>Fri 26</th>
-                            <th>Sat 27</th>
-                            <th>Sun 28</th>
-                            <th>Mon 29</th>
-                            <th>Tue 30</th>
+                            @foreach (var day in Model.Days)
+                            {
+                                <th>@day.DayDate.ToString("dd")<br />@day.DayName.Substring(0, 3)</th>
+                            }
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>John Doe</td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell absent">✗</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell absent">✗</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                        </tr>
-                        <tr>
-                            <td>Jane Smith</td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell absent">✗</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell absent">✗</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                        </tr>
-                        <tr>
-                            <td>Michael Johnson</td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell absent">✗</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell absent">✗</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell absent">✗</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                        </tr>
-                        <tr>
-                            <td>Emily Brown</td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell absent">✗</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                        </tr>
-                        <tr>
-                            <td>David Wilson</td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell absent">✗</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell absent">✗</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell absent">✗</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell weekend">WE</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                            <td><span class="attendance-cell present">✓</span></td>
-                        </tr>
+                        @{
+                            var lastId = -1;
+
+                            foreach (var attendance in Model.Attendances)
+                            {
+                                if (attendance.PersonId != lastId)
+                                {
+                                    if (lastId != -1)
+                                    {
+                                        @:</tr>
+                                    }
+
+                                    @:<tr><td>@attendance.Firstname @attendance.Lastname</td>
+
+                                    lastId = attendance.PersonId;
+                                }
+
+                                var attendanceStatus = 
+                                    attendance.IsWeekend == 1 ? "<span class=\"attendance-cell weekend\">WE</span>" :
+                                    attendance.Attendance == 0 ? "<span class=\"attendance-cell absent\">✗</span>" :
+                                    attendance.Attendance == 1 ? "<span class=\"attendance-cell present\">✓</span>" :
+                                    "<span class=\"attendance-cell weekend\"> </span>";
+
+                                <td>@Html.Raw(attendanceStatus)</td>
+                            }
+                        }
                     </tbody>
                 </table>
             </div>
@@ -757,6 +603,7 @@
             setCurrentMonth();
             updateStats();
             initializeChart();
+            attachFilterListeners();
         });
 
         function setCurrentMonth() {
@@ -837,7 +684,7 @@
                             ticks: {
                                 color: '#606060',
                                 font: { size: 10 },
-                                callback: function(value) {
+                                callback: function (value) {
                                     return value + '%';
                                 }
                             }
@@ -868,6 +715,89 @@
 
         function resetFilters() {
             document.getElementById('searchEmployee').value = '';
+            document.getElementById('monthInput').value = '';
+            setCurrentMonth();
+            applyFilters();
+        }
+
+        function attachFilterListeners() {
+            const monthInput = document.getElementById('monthInput');
+            const searchInput = document.getElementById('searchEmployee');
+
+            monthInput.addEventListener('change', applyFilters);
+            searchInput.addEventListener('input', debounce(applyFilters, 300));
+        }
+
+        function debounce(func, delay) {
+            let timeoutId;
+            return function (...args) {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => func.apply(this, args), delay);
+            };
+        }
+
+        function applyFilters() {
+            const month = document.getElementById('monthInput').value;
+            const searchEmployee = document.getElementById('searchEmployee').value;
+
+            const params = new URLSearchParams();
+            if (month) params.append('Month', month);
+            if (searchEmployee) params.append('SearchEmployee', searchEmployee);
+
+            const url = new URL(window.location);
+            url.search = params.toString();
+
+            // Use fetch to reload the page with filters
+            fetch(`?${params.toString()}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'text/html'
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                // Parse the response HTML
+                const parser = new DOMParser();
+                const newDoc = parser.parseFromString(html, 'text/html');
+
+                // Update the table
+                const newTable = newDoc.querySelector('#attendanceTable');
+                const oldTable = document.querySelector('#attendanceTable');
+                if (newTable && oldTable) {
+                    oldTable.parentElement.replaceChild(newTable, oldTable);
+                }
+
+                // Update stats
+                const newStats = {
+                    totalEmployees: newDoc.querySelector('#totalEmployees')?.textContent,
+                    todayPresence: newDoc.querySelector('#todayPresence')?.textContent,
+                    todayPercentage: newDoc.querySelector('#todayPercentage')?.textContent,
+                    monthPresence: newDoc.querySelector('#monthPresence')?.textContent,
+                    absentToday: newDoc.querySelector('#absentToday')?.textContent
+                };
+
+                if (newStats.totalEmployees) {
+                    document.querySelector('#totalEmployees').textContent = newStats.totalEmployees;
+                }
+                if (newStats.todayPresence) {
+                    document.querySelector('#todayPresence').textContent = newStats.todayPresence;
+                }
+                if (newStats.todayPercentage) {
+                    document.querySelector('#todayPercentage').textContent = newStats.todayPercentage;
+                }
+                if (newStats.monthPresence) {
+                    document.querySelector('#monthPresence').textContent = newStats.monthPresence;
+                }
+                if (newStats.absentToday) {
+                    document.querySelector('#absentToday').textContent = newStats.absentToday;
+                }
+
+                // Update URL without reloading
+                window.history.replaceState({}, '', url);
+            })
+            .catch(error => {
+                console.error('Error applying filters:', error);
+            });
         }
 
         function goBack() {
@@ -875,4 +805,5 @@
         }
     </script>
 </body>
+
 </html>
