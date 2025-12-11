@@ -1,7 +1,15 @@
+using Microsoft.EntityFrameworkCore;
+using FaceCheck.Data;
+using FaceCheck.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddControllers();
 builder.Services.AddRazorPages();
+builder.Services.AddScoped<FaceRecognitionService>();
+builder.Services.AddScoped<AttendanceService>();
+builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
@@ -20,6 +28,7 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-app.MapRazorPages();
+app.MapRazorPages();      
+app.MapControllers();
 
 app.Run();
