@@ -12,6 +12,7 @@ namespace FaceCheck.Data
         public DbSet<Person> Persons { get; set; }
         public DbSet<MonthDay> MonthDays { get; set; }
         public DbSet<AttendanceReport> Attendances { get; set; }
+        public DbSet<AbsenceRate> AbsenceRates { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -21,6 +22,9 @@ namespace FaceCheck.Data
             modelBuilder.Entity<AttendanceReport>().HasNoKey();
             modelBuilder.HasDbFunction(() => GetMonthlyAttendanceReport(default, default)).HasName("GetMonthlyAttendanceReport");
 
+            modelBuilder.Entity<AbsenceRate>().HasNoKey();
+            modelBuilder.HasDbFunction(() => GetYearlyAbsenceRates(default)).HasName("GetYearlyAbsenceRates");
+
         }
 
         public IQueryable<MonthDay> GetMonthDays(int year, int month)
@@ -28,5 +32,8 @@ namespace FaceCheck.Data
 
         public IQueryable<AttendanceReport> GetMonthlyAttendanceReport(int year, int month)
             => FromExpression(() => GetMonthlyAttendanceReport(year, month));
+
+        public IQueryable<AbsenceRate> GetYearlyAbsenceRates(int year)
+            => FromExpression(() => GetYearlyAbsenceRates(year));
     }
 }

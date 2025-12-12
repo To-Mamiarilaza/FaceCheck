@@ -535,6 +535,17 @@
                 </svg>
                 <h3>No data available</h3>
             </div>
+            
+            <!-- Hidden data container for chart -->
+            <div id="chartData" data-absence-rates='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.AbsenceRates.Select(a => a.Rate)))'></div>
+            
+            <!-- Hidden data container for stats -->
+            <div id="statsData" 
+                 data-stat="totalEmployees" 
+                 data-total-employees="@Model.TotalEmployees"
+                 data-today-present="@Model.TodayPresent"
+                 data-today-total="@Model.TodayTotal"
+                 data-month-average="@Model.MonthAveragePresence"></div>
 
             <div class="table-scroll">
                 <table id="attendanceTable">
@@ -614,94 +625,33 @@
         }
 
         function updateStats() {
-            const today = new Date();
-            const todayStr = today.toISOString().split('T')[0];
+            const statsData = document.querySelector('#statsData');
+            const totalEmployees = parseInt(statsData.dataset.totalEmployees) || 0;
+            const todayPresent = parseInt(statsData.dataset.todayPresent) || 0;
+            const todayTotal = parseInt(statsData.dataset.todayTotal) || 0;
+            const monthAverage = parseFloat(statsData.dataset.monthAverage) || 0;
 
-            document.getElementById('totalEmployees').textContent = employees.length;
+            document.getElementById('totalEmployees').textContent = totalEmployees;
+            
+            if (todayTotal > 0) {
+                const todayAbsent = todayTotal - todayPresent;
+                const todayPercentage = Math.round((todayPresent / todayTotal) * 100);
+                document.getElementById('todayPresence').textContent = todayPresent + '/' + todayTotal;
+                document.getElementById('todayPercentage').textContent = todayPercentage + '%';
+                document.getElementById('absentToday').textContent = todayAbsent;
+            } else {
+                document.getElementById('todayPresence').textContent = '-/-';
+                document.getElementById('todayPercentage').textContent = '-';
+                document.getElementById('absentToday').textContent = '-';
+            }
 
-            // Simulate today's attendance
-            const presentToday = Math.floor(Math.random() * employees.length);
-            const absentToday = employees.length - presentToday;
-            const percentage = Math.round((presentToday / employees.length) * 100);
-
-            document.getElementById('todayPresence').textContent = presentToday + '/' + employees.length;
-            document.getElementById('todayPercentage').textContent = percentage + '%';
-            document.getElementById('absentToday').textContent = absentToday;
-
-            // Month average (simulated)
-            const monthAverage = Math.floor(Math.random() * 20) + 80;
-            document.getElementById('monthPresence').textContent = monthAverage + '%';
+            document.getElementById('monthPresence').textContent = monthAverage.toFixed(1) + '%';
         }
 
         function initializeChart() {
-            const ctx = document.getElementById('absentRateChart').getContext('2d');
-
             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            const absentRates = [8, 6, 12, 5, 9, 7, 11, 4, 13, 6, 8, 9];
-
-            if (absentRateChart) {
-                absentRateChart.destroy();
-            }
-
-            absentRateChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: months,
-                    datasets: [{
-                        label: 'Absence Rate (%)',
-                        data: absentRates,
-                        borderColor: '#ef4444',
-                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: '#ef4444',
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        pointRadius: 5,
-                        pointHoverRadius: 7,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: '#909090',
-                                font: { size: 11, weight: '600' },
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100,
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.05)',
-                                drawBorder: false,
-                            },
-                            ticks: {
-                                color: '#606060',
-                                font: { size: 10 },
-                                callback: function (value) {
-                                    return value + '%';
-                                }
-                            }
-                        },
-                        x: {
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.05)',
-                                drawBorder: false,
-                            },
-                            ticks: {
-                                color: '#606060',
-                                font: { size: 10 }
-                            }
-                        }
-                    }
-                }
-            });
+            const absentRates = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.AbsenceRates.Select(a => a.Rate)));
+            updateChart(absentRates);
         }
 
         function getDaysInMonth(year, month) {
@@ -769,27 +719,36 @@
 
                 // Update stats
                 const newStats = {
-                    totalEmployees: newDoc.querySelector('#totalEmployees')?.textContent,
-                    todayPresence: newDoc.querySelector('#todayPresence')?.textContent,
-                    todayPercentage: newDoc.querySelector('#todayPercentage')?.textContent,
-                    monthPresence: newDoc.querySelector('#monthPresence')?.textContent,
-                    absentToday: newDoc.querySelector('#absentToday')?.textContent
+                    totalEmployees: newDoc.querySelector('#statsData')?.dataset.totalEmployees,
+                    todayPresent: newDoc.querySelector('#statsData')?.dataset.todayPresent,
+                    todayTotal: newDoc.querySelector('#statsData')?.dataset.todayTotal,
+                    monthAverage: newDoc.querySelector('#statsData')?.dataset.monthAverage
                 };
 
-                if (newStats.totalEmployees) {
-                    document.querySelector('#totalEmployees').textContent = newStats.totalEmployees;
+                // Update the statsData element with new values
+                const statsDataElement = document.querySelector('#statsData');
+                if (statsDataElement && newDoc.querySelector('#statsData')) {
+                    const newStatsElement = newDoc.querySelector('#statsData');
+                    statsDataElement.dataset.totalEmployees = newStatsElement.dataset.totalEmployees;
+                    statsDataElement.dataset.todayPresent = newStatsElement.dataset.todayPresent;
+                    statsDataElement.dataset.todayTotal = newStatsElement.dataset.todayTotal;
+                    statsDataElement.dataset.monthAverage = newStatsElement.dataset.monthAverage;
+                    
+                    // Update the displayed stats
+                    updateStats();
                 }
-                if (newStats.todayPresence) {
-                    document.querySelector('#todayPresence').textContent = newStats.todayPresence;
-                }
-                if (newStats.todayPercentage) {
-                    document.querySelector('#todayPercentage').textContent = newStats.todayPercentage;
-                }
-                if (newStats.monthPresence) {
-                    document.querySelector('#monthPresence').textContent = newStats.monthPresence;
-                }
-                if (newStats.absentToday) {
-                    document.querySelector('#absentToday').textContent = newStats.absentToday;
+
+                // Extract chart data from hidden data element
+                const chartDataElement = newDoc.querySelector('#chartData');
+                if (chartDataElement) {
+                    try {
+                        const newAbsentRates = JSON.parse(chartDataElement.dataset.absenceRates);
+                        updateChart(newAbsentRates);
+                    } catch (e) {
+                        console.error('Error parsing absence rates:', e);
+                    }
+                } else {
+                    console.warn('Chart data element not found');
                 }
 
                 // Update URL without reloading
@@ -797,6 +756,75 @@
             })
             .catch(error => {
                 console.error('Error applying filters:', error);
+            });
+        }
+
+        function updateChart(absentRates) {
+            const ctx = document.getElementById('absentRateChart').getContext('2d');
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+            if (absentRateChart) {
+                absentRateChart.destroy();
+            }
+
+            absentRateChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Absence Rate (%)',
+                        data: absentRates,
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#ef4444',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#909090',
+                                font: { size: 11, weight: '600' },
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)',
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                color: '#606060',
+                                font: { size: 10 },
+                                callback: function (value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)',
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                color: '#606060',
+                                font: { size: 10 }
+                            }
+                        }
+                    }
+                }
             });
         }
 

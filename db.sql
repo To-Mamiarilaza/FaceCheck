@@ -173,5 +173,56 @@ VALUES
 
 GO
 
-
 UPDATE Persons SET CreatedAt = '2025-05-12' WHERE Id = 13;
+
+
+-- +----------------------------------+
+-- | MONTHLY ABSCENCE RATE PROCEDURE  |
+-- +----------------------------------+
+
+CREATE FUNCTION GetMonthlyAbsenceRate
+(
+    @year INT,
+    @month INT
+)
+RETURNS TABLE
+AS
+RETURN
+(
+    SELECT 
+        CAST (SUM (
+            CASE WHEN (IsWeekend = 0 and Attendance = 0 and DayDate < GETDATE()) THEN 1 ELSE 0 END
+        ) AS INT) AS TotalAbsences,
+        CAST (SUM (
+            CASE WHEN (IsWeekend = 0 and Attendance != -1 and DayDate < GETDATE()) THEN 1 ELSE 0 END
+        ) AS INT) AS TotalWorkingDays
+    FROM
+        GetMonthlyAttendanceReport(@year, @month)
+);
+
+CREATE FUNCTION GetYearlyAbsenceRates
+(
+    @year INT
+)
+RETURNS TABLE
+AS
+RETURN 
+(
+    SELECT
+        Months.Month,
+        (
+            SELECT 
+                CASE 
+                    WHEN TotalWorkingDays = 0 THEN 0
+                    ELSE (TotalAbsences * 100) / CAST(TotalWorkingDays AS FLOAT) 
+                END
+            FROM GetMonthlyAbsenceRate(@year, Months.Month)
+        ) as Rate
+    FROM
+    (
+        SELECT TOP 12 ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS Month
+        FROM sys.objects
+    ) as Months
+);
+
+SELECT * FROM GetYearlyAbsenceRates(2025);
