@@ -91,3 +91,138 @@ VALUES
 ('Ian', 'Taylor', 'ian.taylor@example.com'),
 ('Julia', 'Anderson', 'julia.anderson@example.com');
 GO
+
+-- +--------------------------------------+
+-- | MONTHLY ATTENDANCE REPORT PROCEDURE  |
+-- +--------------------------------------+
+
+CREATE FUNCTION GetMonthDays (@year INT, @month INT)
+RETURNS TABLE
+AS
+RETURN
+(
+    SELECT 
+        DATEFROMPARTS(@year, @month, n) AS DayDate,
+        DATENAME(WEEKDAY, DATEFROMPARTS(@year, @month, n)) AS DayName,
+        CASE 
+            WHEN DATENAME(WEEKDAY, DATEFROMPARTS(@year, @month, n)) IN ('samedi', 'dimanche', 'Saturday', 'Sunday') 
+                THEN 1 
+            ELSE 0 
+        END AS IsWeekend
+    FROM (
+        SELECT ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS n
+        FROM sys.objects
+    ) AS numbers
+    WHERE n <= DAY(EOMONTH(DATEFROMPARTS(@year, @month, 1)))
+);
+
+CREATE FUNCTION GetMonthlyAttendanceReport
+(
+    @year INT,
+    @month INT
+)
+RETURNS TABLE
+AS
+RETURN
+(
+    SELECT
+        md.DayDate,
+        md.DayName,
+        md.IsWeekend,
+        p.Id AS PersonId,
+        p.Firstname,
+        p.Lastname,
+        CASE 
+            WHEN a.PersonId IS NOT NULL THEN 1             -- Present
+            WHEN p.CreatedAt > md.DayDate THEN -1          -- Not created yet
+            ELSE 0                                         -- Absent
+        END AS Attendance
+    FROM
+        GetMonthDays(@year, @month) AS md
+    CROSS JOIN 
+        Persons AS p
+    LEFT JOIN 
+        Attendances AS a
+            ON a.PersonId = p.Id
+            AND CAST(a.CheckInTime AS DATE) = md.DayDate
+);
+
+-- SAMPLE DATA TO TEST THE FUNCTION
+INSERT INTO Persons (Firstname, Lastname, Email)
+VALUES 
+('To', 'MAMIARILAZA', 'mamiarilaza.to@gmail.com'),
+('Tatiana', 'RAJAONASITERA', 'tatianarajao@gmail.com');
+
+-- Day 5
+INSERT INTO Attendances (PersonId, CheckInTime)
+VALUES
+(14, '2025-01-12 08:03:00'),
+(14, '2025-02-12 08:11:00'),
+(14, '2025-03-12 08:11:00'),
+(14, '2025-08-12 08:11:00'),
+(14, '2025-09-12 08:11:00'),
+(14, '2025-10-12 08:11:00'),
+(14, '2025-11-12 08:11:00'),
+(14, '2025-12-12 08:22:00');
+
+INSERT INTO Attendances (PersonId, CheckInTime)
+VALUES
+(13, '2025-05-12 08:03:00'),
+(13, '2025-08-12 08:11:00'),
+(13, '2025-09-12 08:11:00');
+
+GO
+
+UPDATE Persons SET CreatedAt = '2025-05-12' WHERE Id = 13;
+
+
+-- +----------------------------------+
+-- | MONTHLY ABSCENCE RATE PROCEDURE  |
+-- +----------------------------------+
+
+CREATE FUNCTION GetMonthlyAbsenceRate
+(
+    @year INT,
+    @month INT
+)
+RETURNS TABLE
+AS
+RETURN
+(
+    SELECT 
+        CAST (SUM (
+            CASE WHEN (IsWeekend = 0 and Attendance = 0 and DayDate < GETDATE()) THEN 1 ELSE 0 END
+        ) AS INT) AS TotalAbsences,
+        CAST (SUM (
+            CASE WHEN (IsWeekend = 0 and Attendance != -1 and DayDate < GETDATE()) THEN 1 ELSE 0 END
+        ) AS INT) AS TotalWorkingDays
+    FROM
+        GetMonthlyAttendanceReport(@year, @month)
+);
+
+CREATE FUNCTION GetYearlyAbsenceRates
+(
+    @year INT
+)
+RETURNS TABLE
+AS
+RETURN 
+(
+    SELECT
+        Months.Month,
+        (
+            SELECT 
+                CASE 
+                    WHEN TotalWorkingDays = 0 THEN 0
+                    ELSE (TotalAbsences * 100) / CAST(TotalWorkingDays AS FLOAT) 
+                END
+            FROM GetMonthlyAbsenceRate(@year, Months.Month)
+        ) as Rate
+    FROM
+    (
+        SELECT TOP 12 ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS Month
+        FROM sys.objects
+    ) as Months
+);
+
+SELECT * FROM GetYearlyAbsenceRates(2025);
