@@ -1,10 +1,10 @@
 using FaceCheck.Models;
-using FaceCheck.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Microsoft.EntityFrameworkCore;
+using System.Data;
+using Microsoft.Data.SqlClient;
 
 namespace FaceCheck.Services
 {
@@ -15,13 +15,11 @@ namespace FaceCheck.Services
 
     public class AuthService : IAuthService
     {
-        private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
         private readonly ILogger<AuthService> _logger;
 
-        public AuthService(AppDbContext context, IConfiguration configuration, ILogger<AuthService> logger)
+        public AuthService(IConfiguration configuration, ILogger<AuthService> logger)
         {
-            _context = context;
             _configuration = configuration;
             _logger = logger;
         }
@@ -40,8 +38,8 @@ namespace FaceCheck.Services
                     };
                 }
 
-                // Find user by email
-                var user = await _context.Persons.FirstOrDefaultAsync(p => p.Email == request.Email);
+                // Get user from database using ADO.NET
+                var user = await GetUserByEmailAsync(request.Email);
                 if (user == null)
                 {
                     return new LoginResponse
@@ -54,11 +52,6 @@ namespace FaceCheck.Services
                 // Verify password
                 if (!BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
                 {
-                    _logger.LogInformation($"The request password: {request.Password}");
-                    var hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
-                    _logger.LogInformation($"Hashed password: {hashedPassword}");
-                    _logger.LogInformation($"Stored password: {user.Password}");
-
                     return new LoginResponse
                     {
                         Success = false,
@@ -92,6 +85,44 @@ namespace FaceCheck.Services
                     Message = "An error occurred during login."
                 };
             }
+        }
+
+        private async Task<Person?> GetUserByEmailAsync(string email)
+        {
+            const string query = @"
+                SELECT Id, Firstname, Lastname, Email, Password, Status, CreatedAt
+                FROM Persons
+                WHERE Email = @Email
+            ";
+
+            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                await connection.OpenAsync();
+
+                using (var command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Email", email);
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            return new Person
+                            {
+                                Id = reader.GetInt32(0),
+                                Firstname = reader.GetString(1),
+                                Lastname = reader.GetString(2),
+                                Email = reader.GetString(3),
+                                Password = reader.GetString(4),
+                                Status = reader.GetInt32(5),
+                                CreatedAt = reader.GetDateTime(6)
+                            };
+                        }
+                    }
+                }
+            }
+
+            return null;
         }
 
         private string GenerateJwtToken(Person user)
