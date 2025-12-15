@@ -37,6 +37,7 @@ builder.Services.AddAuthentication("Bearer")
 
 // Add services
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IStatisticsService, StatisticsService>();
 
 var app = builder.Build();
 
