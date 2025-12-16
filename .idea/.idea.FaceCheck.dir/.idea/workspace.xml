@@ -9,16 +9,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="94d5dedb-f33f-4389-a2ce-2d64edf1d29f" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Data/AppDbContext.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/FaceCheck.sln" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Models/Person.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/db.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FaceCheck.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/FaceCheck.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Pages/Detection.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/Pages/Detection.cshtml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Pages/EmployeeList.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Pages/EmployeeList.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Pages/EmployeeList.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/Pages/EmployeeList.cshtml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Program.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/appsettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.FaceCheck.dir/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.FaceCheck.dir/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -34,6 +25,7 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RESET_MODE" value="HARD" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -71,7 +63,7 @@
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "fix/rebaseFaceId",
     "last_opened_file_path": "/home/zaby/M2/FaceCheck/FaceCheck.csproj",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
