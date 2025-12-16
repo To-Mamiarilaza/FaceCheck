@@ -35,7 +35,7 @@ namespace FaceCheck.Data
 
         public IQueryable<AbsenceRate> GetYearlyAbsenceRates(int year)
             => FromExpression(() => GetYearlyAbsenceRates(year));
-        public DbSet<Attendance> Attendances { get; set; }
+        public DbSet<Attendance> AttendancesRegister { get; set; }
         public DbSet<PictureDirectory> PictureDirectory { get; set; }
     }
 }

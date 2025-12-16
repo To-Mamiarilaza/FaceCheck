@@ -20,7 +20,7 @@ public class AttendanceService
             CheckInTime = DateTime.Now
         };
 
-        _db.Attendances.Add(attendance);
+        _db.AttendancesRegister.Add(attendance);
         await _db.SaveChangesAsync();
         return true;
     }

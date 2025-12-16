@@ -78,7 +78,7 @@ namespace FaceCheck.Controllers
 
                 // Insertion présence
                 var attendance = new Attendance { PersonId = person.Id, CheckInTime = DateTime.Now };
-                _context.Attendances.Add(attendance);
+                _context.AttendancesRegister.Add(attendance);
                 _context.SaveChanges();
 
                 return Ok(new

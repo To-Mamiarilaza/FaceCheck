@@ -9,10 +9,7 @@ CREATE TABLE Persons (
     Firstname VARCHAR(50) NOT NULL,
     Lastname VARCHAR(255) NOT NULL,
     Email VARCHAR(100) NOT NULL UNIQUE,
-<<<<<<< HEAD
     Password VARCHAR(255) NOT NULL,
-=======
->>>>>>> e952940 ([FEAT] : FaceID)
     Status INT DEFAULT 10,
     CreatedAt DATETIME DEFAULT GETDATE()
 );
