@@ -3,9 +3,9 @@
 @{
     ViewData["Title"] = "Detection";
 }
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -524,7 +524,8 @@
         }
     </style>
 </head>
-   <body>
+
+<body>
     <div class="container">
         <div class="header">
             <div class="status-indicator"></div>
@@ -538,7 +539,7 @@
                     <div class="fallback-message">
                         <div>
                             <svg class="fallback-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                             </svg>
                             <p class="fallback-text">Autorisation caméra requise</p>
                         </div>
@@ -591,7 +592,6 @@
         let stream = null;
         let captureInterval = null;
 
-        // Initialisation caméra
         async function initCamera() {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({
@@ -601,9 +601,7 @@
                 videoElement.classList.add('active');
                 fallbackMessage.classList.add('hidden');
                 statusValue.textContent = 'Analyse en cours...';
-
-                // Démarre l'envoi automatique toutes les 2 secondes
-                captureInterval = setInterval(captureAndSend, 2000000000000);
+                setTimeout(captureAndSend, 5000);
             } catch (err) {
                 console.error("Erreur caméra :", err);
                 fallbackMessage.classList.remove('hidden');
@@ -611,45 +609,30 @@
             }
         }
 
-        // Capture + envoi réel au backend
         async function captureAndSend() {
             if (!videoElement.videoWidth || !videoElement.videoHeight) return;
-
             const canvas = document.createElement('canvas');
             canvas.width = videoElement.videoWidth;
             canvas.height = videoElement.videoHeight;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(videoElement, 0, 0);
-
-            const imageBase64 = canvas.toDataURL('image/jpeg', 0.8); // qualité 80%
+            const imageBase64 = canvas.toDataURL('image/jpeg', 0.8);
 
             try {
                 const response = await fetch('/api/face/detect', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        ImageBase64: imageBase64.split(',')[1] // on enlève le préfixe data:image/jpeg;base64,
-                    })
+                    body: JSON.stringify({ ImageBase64: imageBase64.split(',')[1] })
                 });
-
                 const result = await response.json();
-
                 if (response.ok && result.success) {
-                    // Succès : personne reconnue
                     showResult(true, result.name || "Utilisateur", result.confidence || 0);
                 } else {
-                    // Échec ou personne inconnue
-                    const message = result.message || "Personne non reconnue";
-                    const confidence = result.confidence || 0;
-                    showResult(false, null, confidence, message);
+                    showResult(false, null, result.confidence || 0, result.message || "Personne non reconnue");
                 }
-            } catch (err) {
-                console.error("Erreur envoi image :", err);
-                // Optionnel : montrer une erreur temporaire
-            }
+            } catch (err) { console.error("Erreur envoi image :", err); }
         }
 
-        // Affichage du popup de résultat
         function showResult(success, name = null, confidence = 0, customMessage = null) {
             const title = document.getElementById('resultTitle');
             const message = document.getElementById('resultMessage');
@@ -678,23 +661,18 @@
 
             confidenceValue.textContent = confidence > 0 ? `${confidence.toFixed(1)}%` : '--';
 
-            // Masque le popup après 4 secondes
             setTimeout(() => {
-                resultPopup.classList.remove('active');
-                resultOverlay.classList.remove('active');
+                window.location.href = '/';
             }, 4000);
         }
 
-        // Nettoyage à la fermeture
         window.addEventListener('beforeunload', () => {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-            }
+            if (stream) stream.getTracks().forEach(track => track.stop());
             if (captureInterval) clearInterval(captureInterval);
         });
 
-        // Démarrage au chargement
         window.addEventListener('DOMContentLoaded', initCamera);
     </script>
 </body>
+
 </html>
