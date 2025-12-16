@@ -9,10 +9,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="94d5dedb-f33f-4389-a2ce-2d64edf1d29f" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/Controllers/FaceController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Controllers/FaceController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Data/AppDbContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Data/AppDbContext.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Services/AttendanceService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Services/AttendanceService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db.sql" beforeDir="false" afterPath="$PROJECT_DIR$/db.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.FaceCheck.dir/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.FaceCheck.dir/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FaceCheck.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/FaceCheck.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Pages/NewEmployee.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Pages/NewEmployee.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Pages/NewEmployee.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/Pages/NewEmployee.cshtml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

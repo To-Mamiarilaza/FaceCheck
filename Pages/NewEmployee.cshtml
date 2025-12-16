@@ -334,21 +334,14 @@
         </a>
 
         <div class="main-content">
-            <div class="column">
-                <h2 class="column-title">Face Capture</h2>
-                <div class="detection-frame" id="detectionFrame">
-                    <button class="start-camera-btn" id="startCameraBtn">
-                        Click here to register new face
-                    </button>
-                    <video id="videoElement" autoplay playsinline></video>
-                    <div class="camera-overlay" id="cameraOverlay" style="display: none;"></div>
-                </div>
-                <div class="camera-status" id="cameraStatus">Camera: Inactive</div>
+            <div class="form-group">
+                <label for="faceFile">Upload Face Image</label>
+                <input type="file" id="faceFile" name="FaceFile" accept="image/*" required>
             </div>
 
             <div class="column">
                 <h2 class="column-title">Employee Information</h2>
-                <form id="employeeForm">
+                <form id="employeeForm" enctype="multipart/form-data">
                     <div class="form-group">
                         <label for="firstName">First Name</label>
                         <input type="text" id="firstName" name="firstName" required placeholder="Enter first name">
@@ -429,37 +422,21 @@
 
             // Reset form and camera
             document.getElementById('employeeForm').reset();
-            stopCamera();
         });
 
         function cancelRegistration() {
             if (confirm('Are you sure you want to cancel? All data will be lost.')) {
                 document.getElementById('employeeForm').reset();
-                stopCamera();
                 // window.location.href = 'index.html'; // Navigate back
             }
         }
 
-        function stopCamera() {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                videoElement.classList.remove('active');
-                startCameraBtn.style.display = 'block';
-                cameraOverlay.style.display = 'none';
-                cameraStatus.textContent = 'Camera: Inactive';
-                cameraStatus.classList.remove('active');
-                cameraActive = false;
-            }
-        }
 
         function goBack() {
             stopCamera();
             // window.location.href = 'index.html'; // Navigate back to home
             window.history.back();
         }
-
-        // Clean up camera on page unload
-        window.addEventListener('beforeunload', stopCamera);
     </script>
 </body>
 
