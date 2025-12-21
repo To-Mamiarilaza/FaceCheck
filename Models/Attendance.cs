@@ -1,5 +1,7 @@
-namespace FaceCheck.Models;
+using System.ComponentModel.DataAnnotations.Schema;
 
+namespace FaceCheck.Models;
+[Table("Attendances", Schema = "dbo")]
 public class Attendance
 {
     public int Id { get; set; }

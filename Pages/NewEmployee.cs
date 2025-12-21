@@ -1,10 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Http;
-using System.IO;
-using System.Threading.Tasks;
 using FaceCheck.Data;
 using FaceCheck.Models;
 
@@ -40,49 +35,45 @@ public class NewEmployeeModel : PageModel
 
     public async Task<IActionResult> OnPostAsync()
     {
-        if (!ModelState.IsValid)
-        {
-            return Page(); // retourne la page si des validations échouent
-        }
+        if (FaceFile == null || FaceFile.Length == 0)
+            return BadRequest("Face image is required.");
 
-        // 1️⃣ Créer l'employé
+        // 1️⃣ Insert Person
         var person = new Person
         {
             Firstname = FirstName,
             Lastname = LastName,
             Email = Email,
-            Password = "default" // tu peux générer un hash
+            Password = "123", 
+            Status = 10
         };
 
         _context.Persons.Add(person);
-        await _context.SaveChangesAsync(); // persiste en DB pour obtenir l'ID
+        await _context.SaveChangesAsync(); 
 
-        // 2️⃣ Sauvegarder la photo
-        if (FaceFile != null)
+        // 2️⃣ Save image
+        var uploadsPath = Path.Combine(_env.WebRootPath, "faces");
+        Directory.CreateDirectory(uploadsPath);
+
+        var fileName = $"{Guid.NewGuid()}{Path.GetExtension(FaceFile.FileName)}";
+        var filePath = Path.Combine(uploadsPath, fileName);
+
+        using (var stream = new FileStream(filePath, FileMode.Create))
         {
-            var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads");
-            Directory.CreateDirectory(uploadsFolder);
-
-            var fileName = $"{person.Id}_{Path.GetFileName(FaceFile.FileName)}";
-            var filePath = Path.Combine(uploadsFolder, fileName);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await FaceFile.CopyToAsync(stream);
-            }
-
-            var picture = new PictureDirectory
-            {
-                PersonId = person.Id,
-                Url = $"/uploads/{fileName}"
-            };
-
-            _context.PictureDirectory.Add(picture);
-            await _context.SaveChangesAsync();
+            await FaceFile.CopyToAsync(stream);
         }
 
-        // 3️⃣ Redirection ou message de succès
-        return RedirectToPage("/Index"); // retour à l'accueil
+        // 3️⃣ Insert Picture_Directory
+        var picture = new PictureDirectory
+        {
+            PersonId = person.Id,
+            Url = "/faces/" + fileName,
+            CreatedAt = DateTime.Now
+        };
+        _context.PictureDirectory.Add(picture);
+        await _context.SaveChangesAsync();
+
+        return new OkResult();
     }
     }
 

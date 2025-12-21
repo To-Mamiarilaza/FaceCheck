@@ -1,9 +1,7 @@
-using System;
-using System.Linq;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Emgu.CV;
-using Emgu.CV.Structure;
 using Emgu.CV.Face;
 using FaceCheck.Data;
 using FaceCheck.Models; // Pour EigenFaceRecognizer / LBPHFaceRecognizer
@@ -17,11 +15,12 @@ namespace FaceCheck.Controllers
         private readonly CascadeClassifier _faceCascade;
         private readonly AppDbContext _context;
         private readonly LBPHFaceRecognizer _recognizer;
-
-        public FaceController(AppDbContext context)
+        private readonly IWebHostEnvironment _env;
+        public FaceController(AppDbContext context, IWebHostEnvironment env)
         {
             _faceCascade = new CascadeClassifier("/home/zaby/M2/FaceCheck/haarcascade_frontalface_default.xml");
             _context = context;
+            _env = env;
 
             // Initialisation du recognizer
             _recognizer = new LBPHFaceRecognizer(1, 8, 8, 8, 100); // Paramètres par défaut
@@ -97,7 +96,17 @@ namespace FaceCheck.Controllers
         // Entraîne le recognizer avec les images de la DB
         private void TrainRecognizer()
         {
-            var pictures = _context.PictureDirectory.Include(p => p.Person).ToList();
+            // Affichage d'un texte
+            Console.WriteLine("Hello World!");
+            var pictures = _context.PictureDirectory
+                .Include(p => p.Person)
+                .ToList();
+
+        // On "préfixe" le chemin de base du wwwroot/faces
+            var envPath = _env.WebRootPath;
+            Console.WriteLine($"Chargement de l'env : {envPath}");
+            // Affichage d'un texte
+            Console.WriteLine("Hello World!"+pictures.Count);
             if (!pictures.Any()) return;
 
             var images = new System.Collections.Generic.List<Mat>();
@@ -105,13 +114,14 @@ namespace FaceCheck.Controllers
 
             foreach (var pic in pictures)
             {
+                Console.WriteLine($"Chargement de l'image : {pic.Url}");
                 try
                 {
-                    var mat = CvInvoke.Imread(pic.Url, Emgu.CV.CvEnum.ImreadModes.Grayscale);
+                    var mat = CvInvoke.Imread(envPath+pic.Url, Emgu.CV.CvEnum.ImreadModes.Grayscale);
                     if (!mat.IsEmpty)
                     {
                         images.Add(mat);
-                        labels.Add(pic.PersonId);
+                        labels.Add(pic.Person.Id);
                     }
                 }
                 catch
