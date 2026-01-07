@@ -13,6 +13,8 @@ namespace FaceCheck.Data
         public DbSet<MonthDay> MonthDays { get; set; }
         public DbSet<AttendanceReport> Attendances { get; set; }
         public DbSet<AbsenceRate> AbsenceRates { get; set; }
+        public DbSet<Attendance> AttendancesRegister { get; set; }
+        public DbSet<PictureDirectory> PictureDirectory { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -35,5 +37,6 @@ namespace FaceCheck.Data
 
         public IQueryable<AbsenceRate> GetYearlyAbsenceRates(int year)
             => FromExpression(() => GetYearlyAbsenceRates(year));
+       
     }
 }
