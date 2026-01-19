@@ -16,16 +16,38 @@ namespace FaceCheck.Controllers
         private readonly AppDbContext _context;
         private readonly LBPHFaceRecognizer _recognizer;
         private readonly IWebHostEnvironment _env;
+        private readonly string _modelPath;
+
         public FaceController(AppDbContext context, IWebHostEnvironment env)
         {
-            _faceCascade = new CascadeClassifier("/home/zaby/M2/FaceCheck/haarcascade_frontalface_default.xml");
+            _faceCascade = new CascadeClassifier(
+                "/home/zaby/M2/FaceCheck/haarcascade_frontalface_default.xml");
+
             _context = context;
             _env = env;
 
-            // Initialisation du recognizer
-            _recognizer = new LBPHFaceRecognizer(1, 8, 8, 8, 100); // Paramètres par défaut
-            TrainRecognizer();
+            _recognizer = new LBPHFaceRecognizer(1, 8, 8, 8, 100);
+
+            _modelPath = Path.Combine(_env.ContentRootPath, "Models", "face_model.yml");
+
+            if (System.IO.File.Exists(_modelPath))
+            {
+                // 🔹 Charger le modèle déjà entraîné
+                _recognizer.Read(_modelPath);
+                Console.WriteLine("✔ Modèle LBPH chargé");
+            }
+            else
+            {
+                // 🔹 Entraîner UNE SEULE FOIS
+                TrainRecognizer();
+
+                Directory.CreateDirectory(Path.GetDirectoryName(_modelPath)!);
+                _recognizer.Write(_modelPath);
+
+                Console.WriteLine("✔ Modèle LBPH entraîné et sauvegardé");
+            }
         }
+
 
         // Classe pour la requête frontend
         public class FaceDetectRequest
@@ -75,6 +97,23 @@ namespace FaceCheck.Controllers
                 if (person == null)
                     return Ok(new { success = false, message = "Personne non trouvée" });
 
+                // Vérifier si déjà présent aujourd'hui
+                var today = DateTime.Today;
+                bool alreadyPresentToday = _context.AttendancesRegister.Any(a =>
+                    a.PersonId == person.Id &&
+                    a.CheckInTime >= today &&
+                    a.CheckInTime < today.AddDays(1)
+                );
+
+                if (alreadyPresentToday)
+                {
+                    return Ok(new
+                    {
+                        success = false,
+                        message = "Déjà présent aujourd'hui",
+                        name = $"{person.Firstname} {person.Lastname}"
+                    });
+                }
                 // Insertion présence
                 var attendance = new Attendance { PersonId = person.Id, CheckInTime = DateTime.Now };
                 _context.AttendancesRegister.Add(attendance);
@@ -96,43 +135,40 @@ namespace FaceCheck.Controllers
         // Entraîne le recognizer avec les images de la DB
         private void TrainRecognizer()
         {
-            // Affichage d'un texte
-            Console.WriteLine("Hello World!");
             var pictures = _context.PictureDirectory
                 .Include(p => p.Person)
                 .ToList();
 
-        // On "préfixe" le chemin de base du wwwroot/faces
-            var envPath = _env.WebRootPath;
-            Console.WriteLine($"Chargement de l'env : {envPath}");
-            // Affichage d'un texte
-            Console.WriteLine("Hello World!"+pictures.Count);
             if (!pictures.Any()) return;
 
-            var images = new System.Collections.Generic.List<Mat>();
-            var labels = new System.Collections.Generic.List<int>();
+            var images = new List<Mat>();
+            var labels = new List<int>();
+
+            var envPath = _env.WebRootPath;
 
             foreach (var pic in pictures)
             {
-                Console.WriteLine($"Chargement de l'image : {pic.Url}");
                 try
                 {
-                    var mat = CvInvoke.Imread(envPath+pic.Url, Emgu.CV.CvEnum.ImreadModes.Grayscale);
+                    var fullPath = Path.Combine(envPath, pic.Url.TrimStart('/'));
+
+                    if (!System.IO.File.Exists(fullPath)) continue;
+
+                    var mat = CvInvoke.Imread(fullPath, Emgu.CV.CvEnum.ImreadModes.Grayscale);
+
                     if (!mat.IsEmpty)
                     {
                         images.Add(mat);
                         labels.Add(pic.Person.Id);
                     }
                 }
-                catch
-                {
-                    // Ignore images invalides
-                }
+                catch { }
             }
 
             if (images.Count > 0)
                 _recognizer.Train(images.ToArray(), labels.ToArray());
         }
+
     }
 
 
