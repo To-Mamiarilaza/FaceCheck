@@ -1,17 +1,27 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Threading.RateLimiting;
 using FaceCheck.Data;
 using FaceCheck.Services;
+using DotNetEnv;
+using FaceCheck.Pages;
+using Microsoft.AspNetCore.RateLimiting;
 
+Env.Load();
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
 builder.Services.AddRazorPages();
 builder.Services.AddControllers();
 
-builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+var connectionString = $"Server={Environment.GetEnvironmentVariable("DB_SERVER")};" +
+                       $"Database={Environment.GetEnvironmentVariable("DB_NAME")};" +
+                       $"User Id={Environment.GetEnvironmentVariable("DB_USER")};" +
+                       $"Password={Environment.GetEnvironmentVariable("DB_PASSWORD")};" +
+                       "TrustServerCertificate=True;";
+
+builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
 
 // Add Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -35,14 +45,25 @@ builder.Services.AddAuthentication("Bearer")
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
         };
     });
+builder.Services.AddSingleton(sp => connectionString );
 
 // Add services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IStatisticsService, StatisticsService>();
-builder.Services.AddScoped<FaceRecognitionService>();
-builder.Services.AddScoped<AttendanceService>();
-builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+builder.Services.AddScoped<IAttendanceService,AttendanceService>();
+builder.Services.AddScoped<IFaceRecognitionService,FaceRecognitionService>();
+builder.Services.Configure<FaceRecognitionSettings>(
+    builder.Configuration.GetSection("FaceRecognition"));
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("auth", opt =>
+    {
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.PermitLimit = 5;
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 0;  
+    });
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -52,6 +73,10 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+
+
+app.UseRateLimiter();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

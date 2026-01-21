@@ -15,13 +15,15 @@ namespace FaceCheck.Services
 
     public class AuthService : IAuthService
     {
+        private readonly string _connectionString;
         private readonly IConfiguration _configuration;
         private readonly ILogger<AuthService> _logger;
 
-        public AuthService(IConfiguration configuration, ILogger<AuthService> logger)
+        public AuthService(IConfiguration configuration, ILogger<AuthService> logger,string connectionString)
         {
             _configuration = configuration;
             _logger = logger;
+            _connectionString = connectionString;
         }
 
         public async Task<LoginResponse> LoginAsync(LoginRequest request)
@@ -94,8 +96,8 @@ namespace FaceCheck.Services
                 FROM Persons
                 WHERE Email = @Email
             ";
-
-            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+    
+            using (var connection = new SqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
 

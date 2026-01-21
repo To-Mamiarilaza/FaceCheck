@@ -1,6 +1,7 @@
 using FaceCheck.Models;
 using FaceCheck.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace FaceCheck.Controllers
 {
@@ -21,6 +22,7 @@ namespace FaceCheck.Controllers
         /// <param name="request">LoginRequest containing email and password</param>
         /// <returns>LoginResponse with JWT token if successful</returns>
         [HttpPost("login")]
+        [EnableRateLimiting("auth")]
         public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
         {
             var response = await _authService.LoginAsync(request);
