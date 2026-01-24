@@ -24,9 +24,15 @@ public class NewEmployeeModel : PageModel
 
     [BindProperty]
     public string Email { get; set; }
+    
+    [BindProperty]
+    public string Password { get; set; }
 
     [BindProperty]
-    public IFormFile FaceFile { get; set; } // fichier uploadé
+    public string ConfirmPassword { get; set; }
+
+    [BindProperty]
+    public List<IFormFile> FaceFiles { get; set; }
 
     public void OnGet()
     {
@@ -35,42 +41,54 @@ public class NewEmployeeModel : PageModel
 
     public async Task<IActionResult> OnPostAsync()
     {
-        if (FaceFile == null || FaceFile.Length == 0)
-            return BadRequest("Face image is required.");
+        if (FaceFiles == null || FaceFiles.Count == 0 || FaceFiles.All(f => f.Length == 0))
+            return BadRequest("At least one face image is required.");
+        
+        if (string.IsNullOrEmpty(Password))
+            return BadRequest("Password is required.");
 
-        // 1️⃣ Insert Person
+        if (Password != ConfirmPassword)
+            return BadRequest("Passwords do not match.");
+
+        // insert Person
         var person = new Person
         {
             Firstname = FirstName,
             Lastname = LastName,
             Email = Email,
-            Password = "123", 
-            Status = 10
+            Password = Password, 
+            Status = 1
         };
 
         _context.Persons.Add(person);
         await _context.SaveChangesAsync(); 
 
-        // 2️⃣ Save image
+        // save image
         var uploadsPath = Path.Combine(_env.WebRootPath, "faces");
         Directory.CreateDirectory(uploadsPath);
 
-        var fileName = $"{Guid.NewGuid()}{Path.GetExtension(FaceFile.FileName)}";
-        var filePath = Path.Combine(uploadsPath, fileName);
-
-        using (var stream = new FileStream(filePath, FileMode.Create))
+        foreach (var faceFile in FaceFiles)
         {
-            await FaceFile.CopyToAsync(stream);
+            if (faceFile.Length > 0)
+            {
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(faceFile.FileName)}";
+                var filePath = Path.Combine(uploadsPath, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await faceFile.CopyToAsync(stream);
+                }
+
+                // 3️⃣ Insert Picture_Directory
+                var picture = new PictureDirectory
+                {
+                    PersonId = person.Id,
+                    Url = "/faces/" + fileName,
+                    CreatedAt = DateTime.Now
+                };
+                _context.PictureDirectory.Add(picture);
+            }
         }
-
-        // 3️⃣ Insert Picture_Directory
-        var picture = new PictureDirectory
-        {
-            PersonId = person.Id,
-            Url = "/faces/" + fileName,
-            CreatedAt = DateTime.Now
-        };
-        _context.PictureDirectory.Add(picture);
         await _context.SaveChangesAsync();
 
         return new OkResult();

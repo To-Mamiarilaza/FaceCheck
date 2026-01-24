@@ -9,13 +9,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="94d5dedb-f33f-4389-a2ce-2d64edf1d29f" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.env" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.FaceCheck.dir/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.FaceCheck.dir/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Controllers/AuthController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Controllers/AuthController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Controllers/FaceController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Controllers/FaceController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FaceCheck.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/FaceCheck.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Program.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/appsettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Models/face_model.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Pages/FaceRecognitionSettings.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Pages/FaceRecognitionSettings.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Pages/NewEmployee.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Pages/NewEmployee.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Pages/NewEmployee.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/Pages/NewEmployee.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Services/FaceRecognitionService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Services/FaceRecognitionService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wwwroot/faces/10.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/wwwroot/faces/f1bdbc6e-21ea-4168-a139-8d074c400347.jpeg" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,10 +52,15 @@
   }
 }</component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="mock:///home/zaby/M2/FaceCheck/Controllers/FaceController.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Pages/Detection.cshtml" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" root2="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Pages/FaceRecognitionSettings.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Pages/Index.cshtml" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" root2="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Pages/Index.cshtml.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock:///home/zaby/M2/FaceCheck/Pages/NewEmployee.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///home/zaby/M2/FaceCheck/Pages/NewEmployee.cshtml" root0="FORCE_HIGHLIGHTING" root1="SKIP_HIGHLIGHTING" root2="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Services/FaceRecognitionService.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Services/IAttendanceService.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Services/IFaceRecognitionService.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/wwwroot/lib/bootstrap/dist/js/bootstrap.esm.js.map" root0="FORCE_HIGHLIGHTING" />
     <setting file="file:///usr/lib/dotnet/sdk/8.0.121/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_default.globalconfig" root0="FORCE_HIGHLIGHTING" />
   </component>
@@ -67,25 +73,25 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    ".NET Launch Settings Profile.FaceCheck: http.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "git-widget-placeholder": "fix/Attendances",
-    "last_opened_file_path": "/home/zaby/M2/FaceCheck/FaceCheck.csproj",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;.NET Launch Settings Profile.FaceCheck: http.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;fix/Attendances&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/zaby/M2/FaceCheck/FaceCheck.csproj&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected=".NET Launch Settings Profile.FaceCheck: http">
     <configuration name="FaceCheck: http" type="LaunchSettings" factoryName=".NET Launch Settings Profile">
       <option name="LAUNCH_PROFILE_PROJECT_FILE_PATH" value="$PROJECT_DIR$/FaceCheck.csproj" />
@@ -131,7 +137,9 @@
       <workItem from="1765473101138" duration="9264000" />
       <workItem from="1765483651074" duration="6141000" />
       <workItem from="1766339499415" duration="6195000" />
-      <workItem from="1769009428878" duration="9230000" />
+      <workItem from="1769009428878" duration="14677000" />
+      <workItem from="1769103773206" duration="5101000" />
+      <workItem from="1769267260512" duration="3849000" />
     </task>
     <servers />
   </component>

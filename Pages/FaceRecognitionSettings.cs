@@ -2,7 +2,7 @@ namespace FaceCheck.Pages;
 
 public class FaceRecognitionSettings
 {
-    public double ConfidenceThreshold { get; set; } = 80;
+    public double ConfidenceThreshold { get; set; } = 30;
     public double Threshold { get; set; } = 100;
     public int MinFaceSize { get; set; } = 50;
     public double ScaleFactor { get; set; } = 1.1;
