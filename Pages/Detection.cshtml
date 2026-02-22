@@ -522,6 +522,79 @@
                 display: none;
             }
         }
+
+        /* Carte de prévisualisation de la photo envoyée */
+        .captured-card {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 180px;
+            background: rgba(10, 10, 20, 0.95);
+            border: 2px solid rgba(0, 255, 255, 0.7);
+            border-radius: 14px;
+            overflow: hidden;
+            z-index: 50;
+            display: none;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.35), 0 8px 32px rgba(0,0,0,0.5);
+        }
+
+        .captured-card.active {
+            display: block;
+            animation: slideInCard 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @@keyframes slideInCard {
+            from { transform: translateX(220px); opacity: 0; }
+            to   { transform: translateX(0);     opacity: 1; }
+        }
+
+        .captured-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 0.75rem;
+            background: rgba(0, 255, 255, 0.12);
+            border-bottom: 1px solid rgba(0, 255, 255, 0.25);
+        }
+
+        .captured-card-label {
+            color: #00ffff;
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        .captured-spinner {
+            width: 13px;
+            height: 13px;
+            border: 2px solid rgba(0, 255, 255, 0.2);
+            border-top-color: #00ffff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @@keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .captured-thumb {
+            width: 100%;
+            height: 110px;
+            object-fit: cover;
+            display: block;
+        }
+
+        @@media (max-width: 768px) {
+            .captured-card {
+                bottom: 1rem;
+                right: 1rem;
+                width: 140px;
+            }
+            .captured-thumb {
+                height: 80px;
+            }
+        }
     </style>
 </head>
 
@@ -570,6 +643,15 @@
         </div>
     </div>
 
+    <!-- Carte photo capturée -->
+    <div id="capturedCard" class="captured-card">
+        <div class="captured-card-header">
+            <span class="captured-card-label">Photo envoyée</span>
+            <div class="captured-spinner"></div>
+        </div>
+        <img id="capturedThumb" class="captured-thumb" alt="Photo envoyée" />
+    </div>
+
     <!-- Overlay + Popup résultat -->
     <div class="result-overlay" id="resultOverlay"></div>
     <div class="result-popup" id="resultPopup">
@@ -588,9 +670,12 @@
         const resultOverlay = document.getElementById('resultOverlay');
         const statusValue = document.getElementById('statusValue');
         const confidenceValue = document.getElementById('confidenceValue');
+        const capturedCard = document.getElementById('capturedCard');
+        const capturedThumb = document.getElementById('capturedThumb');
 
         let stream = null;
         let captureInterval = null;
+        let isCapturing = false;
 
         async function initCamera() {
             try {
@@ -601,7 +686,7 @@
                 videoElement.classList.add('active');
                 fallbackMessage.classList.add('hidden');
                 statusValue.textContent = 'Analyse en cours...';
-                setTimeout(captureAndSend, 5000);
+                captureInterval = setInterval(captureAndSend, 3000);
             } catch (err) {
                 console.error("Erreur caméra :", err);
                 fallbackMessage.classList.remove('hidden');
@@ -610,13 +695,20 @@
         }
 
         async function captureAndSend() {
-            if (!videoElement.videoWidth || !videoElement.videoHeight) return;
+            if (isCapturing || !videoElement.videoWidth || !videoElement.videoHeight) return;
+            isCapturing = true;
+
             const canvas = document.createElement('canvas');
             canvas.width = videoElement.videoWidth;
             canvas.height = videoElement.videoHeight;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(videoElement, 0, 0);
             const imageBase64 = canvas.toDataURL('image/jpeg', 0.8);
+
+            // Afficher la carte avec la photo envoyée
+            capturedThumb.src = imageBase64;
+            capturedCard.classList.add('active');
+            statusValue.textContent = 'Photo envoyée...';
 
             try {
                 const response = await fetch('/api/face/detect', {
@@ -630,10 +722,17 @@
                 } else {
                     showResult(false, null, result.confidence || 0, result.message || "Personne non reconnue");
                 }
-            } catch (err) { console.error("Erreur envoi image :", err); }
+            } catch (err) {
+                console.error("Erreur envoi image :", err);
+                capturedCard.classList.remove('active');
+                statusValue.textContent = 'Analyse en cours...';
+                isCapturing = false;
+            }
         }
 
         function showResult(success, name = null, confidence = 0, customMessage = null) {
+            clearInterval(captureInterval);
+            capturedCard.classList.remove('active');
             const title = document.getElementById('resultTitle');
             const message = document.getElementById('resultMessage');
             const subtext = document.getElementById('resultSubtext');

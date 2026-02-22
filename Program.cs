@@ -51,7 +51,7 @@ builder.Services.AddSingleton(sp => connectionString );
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IStatisticsService, StatisticsService>();
 builder.Services.AddScoped<IAttendanceService,AttendanceService>();
-builder.Services.AddScoped<IFaceRecognitionService,FaceRecognitionService>();
+builder.Services.AddSingleton<IFaceRecognitionService, FaceRecognitionService>();
 builder.Services.Configure<FaceRecognitionSettings>(
     builder.Configuration.GetSection("FaceRecognition"));
 builder.Services.AddRateLimiter(options =>

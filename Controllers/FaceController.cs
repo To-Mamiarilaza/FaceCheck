@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using FaceCheck.Services;
 
@@ -76,9 +77,10 @@ namespace FaceCheck.Controllers
         }
 
         /// <summary>
-        /// Réentraîne le modèle de reconnaissance faciale
+        /// Réentraîne le modèle de reconnaissance faciale (admin uniquement)
         /// </summary>
         [HttpPost("retrain")]
+        [Authorize]
         public async Task<IActionResult> RetrainModel()
         {
             try
@@ -113,10 +115,30 @@ namespace FaceCheck.Controllers
             return Ok(new
             {
                 modelTrained = _faceRecognitionService.IsModelTrained,
-                message = _faceRecognitionService.IsModelTrained 
-                    ? "Modèle prêt" 
+                message = _faceRecognitionService.IsModelTrained
+                    ? "Modèle prêt"
                     : "Modèle non entraîné"
             });
+        }
+
+        /// <summary>
+        /// Diagnostics complets : état du modèle, images par personne, fichiers manquants.
+        /// Utiliser pour comprendre pourquoi la reconnaissance échoue ou favorise une personne.
+        /// </summary>
+        [HttpGet("diagnostics")]
+        [Authorize]
+        public async Task<IActionResult> GetDiagnostics()
+        {
+            try
+            {
+                var result = await _faceRecognitionService.RunDiagnosticsAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erreur lors du diagnostic");
+                return StatusCode(500, new { success = false, message = "Erreur lors du diagnostic" });
+            }
         }
     }
 }

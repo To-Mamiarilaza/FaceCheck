@@ -1,9 +1,11 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Emgu.CV;
 using Emgu.CV.Face;
 using Emgu.CV.CvEnum;
 using FaceCheck.Data;
 using FaceCheck.Models;
+using FaceCheck.Pages;
 
 namespace FaceCheck.Services
 {
@@ -11,39 +13,32 @@ namespace FaceCheck.Services
     {
         private readonly ILogger<FaceRecognitionService> _logger;
         private readonly CascadeClassifier _faceCascade;
-        private readonly AppDbContext _context;
+        private readonly IServiceScopeFactory _scopeFactory;
         private readonly LBPHFaceRecognizer _recognizer;
         private readonly IWebHostEnvironment _env;
         private readonly string _modelPath;
         private readonly string _cascadePath;
+        private readonly FaceRecognitionSettings _settings;
 
-        // Paramètres de configuration
-        private const double SCALE_FACTOR = 1.1;
-        private const int MIN_NEIGHBORS = 5;
-        private const int MIN_FACE_SIZE = 50;
-        private const double CONFIDENCE_THRESHOLD = 80.0;
-        private const int STANDARD_FACE_WIDTH = 100;
-        private const int STANDARD_FACE_HEIGHT = 100;
+        // SemaphoreSlim(1,1) garantit qu'une seule opération OpenCV s'exécute à la fois (non thread-safe)
+        private readonly SemaphoreSlim _semaphore = new(1, 1);
 
-        // Paramètres LBPH
-        private const int LBPH_RADIUS = 1;
-        private const int LBPH_NEIGHBORS = 8;
-        private const int LBPH_GRID_X = 8;
-        private const int LBPH_GRID_Y = 8;
-        private const double LBPH_THRESHOLD = 100.0;
+        private const int STANDARD_FACE_WIDTH = 120;
+        private const int STANDARD_FACE_HEIGHT = 120;
 
         public bool IsModelTrained { get; private set; }
 
         public FaceRecognitionService(
-            AppDbContext context,
+            IServiceScopeFactory scopeFactory,
             IWebHostEnvironment env,
-            ILogger<FaceRecognitionService> logger)
+            ILogger<FaceRecognitionService> logger,
+            IOptions<FaceRecognitionSettings> settings)
         {
             _logger = logger;
-            _context = context;
+            _scopeFactory = scopeFactory;
             _env = env;
+            _settings = settings.Value;
 
-            // Configuration du chemin de cascade
             _cascadePath = Path.Combine(env.ContentRootPath, "haarcascade_frontalface_default.xml");
 
             if (!File.Exists(_cascadePath))
@@ -54,13 +49,12 @@ namespace FaceCheck.Services
 
             _faceCascade = new CascadeClassifier(_cascadePath);
 
-            // Initialisation du recognizer LBPH
             _recognizer = new LBPHFaceRecognizer(
-                LBPH_RADIUS,
-                LBPH_NEIGHBORS,
-                LBPH_GRID_X,
-                LBPH_GRID_Y,
-                LBPH_THRESHOLD);
+                _settings.LBPHRadius,
+                _settings.LBPHNeighbors,
+                _settings.LBPHGridX,
+                _settings.LBPHGridY,
+                _settings.Threshold);
 
             _modelPath = Path.Combine(_env.ContentRootPath, "Models", "face_model.yml");
 
@@ -76,8 +70,6 @@ namespace FaceCheck.Services
                     _recognizer.Read(_modelPath);
                     IsModelTrained = true;
                     _logger.LogInformation("Modèle LBPH chargé depuis {Path}", _modelPath);
-
-                    // Vérification de l'intégrité du modèle
                     ValidateModel();
                 }
                 else
@@ -97,14 +89,11 @@ namespace FaceCheck.Services
         {
             try
             {
-                // Test simple pour vérifier que le modèle peut faire des prédictions
                 var testMat = new Mat(STANDARD_FACE_HEIGHT, STANDARD_FACE_WIDTH, DepthType.Cv8U, 1);
-                testMat.SetTo(new Emgu.CV.Structure.MCvScalar(128)); // Remplir avec du gris
-
+                testMat.SetTo(new Emgu.CV.Structure.MCvScalar(128));
                 var testResult = _recognizer.Predict(testMat);
-                _logger.LogInformation("Validation du modèle: Label={Label}, Distance={Distance}", 
+                _logger.LogInformation("Validation du modèle: Label={Label}, Distance={Distance}",
                     testResult.Label, testResult.Distance);
-
                 testMat.Dispose();
             }
             catch (Exception ex)
@@ -115,20 +104,53 @@ namespace FaceCheck.Services
         }
 
         /// <summary>
-        /// Normalise un visage : redimensionnement et égalisation d'histogramme
+        /// Normalise un visage : redimensionnement + CLAHE (normalisation lumière locale adaptative).
+        /// CLAHE est plus robuste que EqualizeHist pour les visages sous éclairage non uniforme.
+        /// Doit recevoir uniquement le crop du visage, pas l'image complète.
         /// </summary>
         private Mat NormalizeFace(Mat faceMat)
         {
-            var normalized = new Mat();
-
-            // 1. Redimensionner à une taille standard
-            CvInvoke.Resize(faceMat, normalized, 
+            var resized = new Mat();
+            CvInvoke.Resize(faceMat, resized,
                 new System.Drawing.Size(STANDARD_FACE_WIDTH, STANDARD_FACE_HEIGHT));
 
-            // 2. Égalisation d'histogramme pour normaliser l'éclairage
-            CvInvoke.EqualizeHist(normalized, normalized);
+            // CLAHE : égalisation d'histogramme adaptative locale (meilleure que EqualizeHist global)
+            // clipLimit=2 évite l'amplification du bruit, tileGridSize=8x8 couvre les zones du visage
+            var result = new Mat();
+            CvInvoke.CLAHE(resized, 2.0, new System.Drawing.Size(8, 8), result);
+            resized.Dispose();
+            return result;
+        }
 
-            return normalized;
+        /// <summary>
+        /// Génère des variantes augmentées d'un visage normalisé pour enrichir l'entraînement.
+        /// Retourne : original + flip horizontal + luminosité +30 + luminosité -30.
+        /// </summary>
+        private List<Mat> AugmentFace(Mat normalizedFace)
+        {
+            var variants = new List<Mat>();
+
+            // 1. Original
+            var original = new Mat();
+            normalizedFace.CopyTo(original);
+            variants.Add(original);
+
+            // 2. Miroir horizontal (simule variation gauche/droite)
+            var flipped = new Mat();
+            CvInvoke.Flip(normalizedFace, flipped, Emgu.CV.CvEnum.FlipType.Horizontal);
+            variants.Add(flipped);
+
+            // 3. Luminosité +30 (simule environnement plus éclairé)
+            var brighter = new Mat();
+            CvInvoke.ConvertScaleAbs(normalizedFace, brighter, 1.0, 30);
+            variants.Add(brighter);
+
+            // 4. Luminosité -30 (simule environnement moins éclairé)
+            var darker = new Mat();
+            CvInvoke.ConvertScaleAbs(normalizedFace, darker, 1.0, -30);
+            variants.Add(darker);
+
+            return variants;
         }
 
         public async Task<FaceDetectionResult> DetectAndRecognizeAsync(string imageBase64)
@@ -150,119 +172,115 @@ namespace FaceCheck.Services
 
             try
             {
-                // Décodage Base64
                 byte[] imageBytes = Convert.FromBase64String(imageBase64);
 
-// Dossier de sauvegarde
-                var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "captures");
+                // Sauvegarde de la capture (utilise WebRootPath, cohérent avec le reste du service)
+                var uploadsPath = Path.Combine(_env.WebRootPath, "captures");
                 Directory.CreateDirectory(uploadsPath);
-
-// Nom du fichier
                 var fileName = $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}-{Guid.NewGuid()}.jpg";
-                var filePath = Path.Combine(uploadsPath, fileName);
+                await System.IO.File.WriteAllBytesAsync(Path.Combine(uploadsPath, fileName), imageBytes);
 
-// Écriture du fichier
-                await System.IO.File.WriteAllBytesAsync(filePath, imageBytes);
-                mat = new Mat();
-                CvInvoke.Imdecode(imageBytes, ImreadModes.ColorRgb, mat);
-
-                if (mat.IsEmpty)
+                // Sérialisation des opérations OpenCV (non thread-safe)
+                await _semaphore.WaitAsync();
+                try
                 {
+                    mat = new Mat();
+                    CvInvoke.Imdecode(imageBytes, ImreadModes.ColorRgb, mat);
+
+                    if (mat.IsEmpty)
+                    {
+                        return new FaceDetectionResult
+                        {
+                            Success = false,
+                            Message = "Impossible de lire l'image",
+                            FaceDetected = false
+                        };
+                    }
+
+                    gray = new Mat();
+                    CvInvoke.CvtColor(mat, gray, ColorConversion.Bgr2Gray);
+
+                    var faces = _faceCascade.DetectMultiScale(
+                        gray,
+                        _settings.ScaleFactor,
+                        _settings.MinNeighbors,
+                        new System.Drawing.Size(_settings.MinFaceSize, _settings.MinFaceSize));
+
+                    if (faces.Length == 0)
+                    {
+                        _logger.LogInformation("Aucun visage détecté dans l'image");
+                        return new FaceDetectionResult
+                        {
+                            Success = false,
+                            Message = "Aucun visage détecté",
+                            FaceDetected = false
+                        };
+                    }
+
+                    _logger.LogInformation("{Count} visage(s) détecté(s)", faces.Length);
+
+                    if (!IsModelTrained)
+                    {
+                        _logger.LogWarning("Tentative de reconnaissance avec un modèle non entraîné");
+                        return new FaceDetectionResult
+                        {
+                            Success = false,
+                            Message = "Modèle non entraîné. Veuillez d'abord entraîner le modèle.",
+                            FaceDetected = true
+                        };
+                    }
+
+                    // Prendre le plus grand visage détecté (le plus proche de la caméra)
+                    var faceRect = faces.OrderByDescending(r => r.Width * r.Height).First();
+                    faceMat = new Mat(gray, faceRect);
+                    normalizedFace = NormalizeFace(faceMat);
+
+                    var result = _recognizer.Predict(normalizedFace);
+
+                    _logger.LogInformation("Reconnaissance: Label={Label}, Distance={Distance}",
+                        result.Label, result.Distance);
+
+                    if (result.Label == -1)
+                    {
+                        return new FaceDetectionResult
+                        {
+                            Success = false,
+                            Message = "Visage non reconnu (hors seuil LBPH)",
+                            FaceDetected = true,
+                            Confidence = 0
+                        };
+                    }
+
+                    // Confidence : 100% quand Distance=0, 0% quand Distance=Threshold
+                    double confidence = Math.Max(0, (1.0 - result.Distance / _settings.Threshold) * 100.0);
+
+                    if (confidence < _settings.MinConfidencePercent)
+                    {
+                        _logger.LogInformation("Confiance trop faible ({Confidence:F1}% < {Min}%)",
+                            confidence, _settings.MinConfidencePercent);
+
+                        return new FaceDetectionResult
+                        {
+                            Success = false,
+                            Message = $"Visage non reconnu (confiance: {confidence:F1}%)",
+                            FaceDetected = true,
+                            Confidence = confidence
+                        };
+                    }
+
                     return new FaceDetectionResult
                     {
-                        Success = false,
-                        Message = "Impossible de lire l'image",
-                        FaceDetected = false
-                    };
-                }
-
-                // Conversion en niveaux de gris
-                gray = new Mat();
-                CvInvoke.CvtColor(mat, gray, ColorConversion.Bgr2Gray);
-
-                // Détection des visages
-                var faces = _faceCascade.DetectMultiScale(
-                    gray,
-                    SCALE_FACTOR,
-                    MIN_NEIGHBORS,
-                    new System.Drawing.Size(MIN_FACE_SIZE, MIN_FACE_SIZE));
-
-                if (faces.Length == 0)
-                {
-                    _logger.LogInformation("Aucun visage détecté dans l'image");
-                    return new FaceDetectionResult
-                    {
-                        Success = false,
-                        Message = "Aucun visage détecté",
-                        FaceDetected = false
-                    };
-                }
-
-                _logger.LogInformation("{Count} visage(s) détecté(s)", faces.Length);
-
-                if (!IsModelTrained)
-                {
-                    _logger.LogWarning("Tentative de reconnaissance avec un modèle non entraîné");
-                    return new FaceDetectionResult
-                    {
-                        Success = false,
-                        Message = "Modèle non entraîné. Veuillez d'abord entraîner le modèle.",
-                        FaceDetected = true
-                    };
-                }
-
-                // Reconnaissance du premier visage détecté
-                var faceRect = faces[0];
-                faceMat = new Mat(gray, faceRect);
-
-                // NORMALISATION DU VISAGE (CRITIQUE!)
-                normalizedFace = NormalizeFace(faceMat);
-
-                // Prédiction
-                var result = _recognizer.Predict(normalizedFace);
-
-                _logger.LogInformation(
-                    "Reconnaissance: Label={Label}, Distance={Distance}",
-                    result.Label,
-                    result.Distance);
-
-                // Vérification du résultat
-                if (result.Label == -1)
-                {
-                    return new FaceDetectionResult
-                    {
-                        Success = false,
-                        Message = "Visage non reconnu (Label=-1)",
+                        Success = true,
+                        PersonId = result.Label,
                         FaceDetected = true,
-                        Confidence = 0
+                        Confidence = confidence,
+                        Message = "Visage reconnu avec succès"
                     };
                 }
-
-                if (result.Distance > CONFIDENCE_THRESHOLD)
+                finally
                 {
-                    _logger.LogInformation(
-                        "Distance trop grande ({Distance} > {Threshold})",
-                        result.Distance,
-                        CONFIDENCE_THRESHOLD);
-
-                    return new FaceDetectionResult
-                    {
-                        Success = false,
-                        Message = $"Visage non reconnu (confiance trop faible: {100 - result.Distance:F2}%)",
-                        FaceDetected = true,
-                        Confidence = 100 - result.Distance
-                    };
+                    _semaphore.Release();
                 }
-
-                // Succès!
-                return new FaceDetectionResult
-                {
-                    Success = true,
-                    PersonId = result.Label,
-                    FaceDetected = true,
-                    Confidence = 100 - result.Distance,
-                    Message = "Visage reconnu avec succès"
-                };
             }
             catch (FormatException)
             {
@@ -286,7 +304,6 @@ namespace FaceCheck.Services
             }
             finally
             {
-                // Libération de la mémoire
                 mat?.Dispose();
                 gray?.Dispose();
                 faceMat?.Dispose();
@@ -296,15 +313,21 @@ namespace FaceCheck.Services
 
         public async Task TrainModelAsync()
         {
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
                 try
                 {
                     _logger.LogInformation("Début de l'entraînement du modèle...");
 
-                    var pictures = _context.PictureDirectory
-                        .Include(p => p.Person)
-                        .ToList();
+                    // Créer un scope pour accéder à AppDbContext (service Scoped depuis un Singleton)
+                    List<PictureDirectory> pictures;
+                    using (var scope = _scopeFactory.CreateScope())
+                    {
+                        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                        pictures = context.PictureDirectory
+                            .Include(p => p.Person)
+                            .ToList();
+                    }
 
                     if (!pictures.Any())
                     {
@@ -312,36 +335,27 @@ namespace FaceCheck.Services
                         return;
                     }
 
-                    // Validation : au moins 2 images
-                    if (pictures.Count < 2)
-                    {
-                        _logger.LogError("Pas assez d'images pour l'entraînement. Minimum: 2, Trouvé: {Count}", pictures.Count);
-                        return;
-                    }
-
-                    // Statistiques par personne
                     var groupedByPerson = pictures.GroupBy(p => p.PersonId);
-                    _logger.LogInformation("📊 Statistiques:");
-                    _logger.LogInformation("   - Total images: {Count}", pictures.Count);
-                    _logger.LogInformation("   - Total personnes: {Count}", groupedByPerson.Count());
+                    _logger.LogInformation("Statistiques: {ImageCount} images, {PersonCount} personne(s)",
+                        pictures.Count, groupedByPerson.Count());
 
                     foreach (var group in groupedByPerson)
                     {
                         var person = group.First().Person;
-                        _logger.LogInformation("   - {Name}: {Count} image(s)",
-                            $"{person.Firstname} {person.Lastname}",
-                            group.Count());
+                        _logger.LogInformation("PersonId {Id} ({Name}): {Count} image(s)",
+                            group.Key, $"{person.Firstname} {person.Lastname}", group.Count());
 
                         if (group.Count() < 3)
-                        {
-                            _logger.LogWarning("     Recommandé: au moins 3-5 images par personne");
-                        }
+                            _logger.LogWarning("Recommandé: au moins 3-5 images par personne pour PersonId {Id}", group.Key);
                     }
 
                     var images = new List<Mat>();
                     var labels = new List<int>();
                     var failedImages = new List<string>();
                     var envPath = _env.WebRootPath;
+
+                    // CascadeClassifier local pour le preprocessing (thread-safe, indépendant de _faceCascade)
+                    using var trainingCascade = new CascadeClassifier(_cascadePath);
 
                     foreach (var pic in pictures)
                     {
@@ -361,18 +375,48 @@ namespace FaceCheck.Services
                             if (mat.IsEmpty)
                             {
                                 _logger.LogWarning("Impossible de charger l'image: {Path}", fullPath);
+                                mat.Dispose();
                                 failedImages.Add(pic.Url);
                                 continue;
                             }
 
-                            // NORMALISATION DES IMAGES D'ENTRAÎNEMENT
-                            var normalizedMat = NormalizeFace(mat);
-                            images.Add(normalizedMat);
-                            labels.Add(pic.PersonId);
+                            // CORRECTIF CRITIQUE : appliquer Haar Cascade sur les images d'entraînement
+                            // pour extraire uniquement le crop du visage, identique au pipeline de prédiction.
+                            // Sans ce correctif, le modèle est entraîné sur l'image entière (fond + corps)
+                            // mais prédit sur un crop de visage → distances LBPH toujours > seuil → 0% de succès.
+                            // TrainingMinNeighbors (3) est plus souple que MinNeighbors (5)
+                            // pour accepter des photos légèrement penchées ou moins bien éclairées.
+                            var detectedFaces = trainingCascade.DetectMultiScale(
+                                mat,
+                                _settings.ScaleFactor,
+                                _settings.TrainingMinNeighbors,
+                                new System.Drawing.Size(_settings.MinFaceSize, _settings.MinFaceSize));
 
-                            mat.Dispose(); // Libérer l'image originale
+                            if (detectedFaces.Length == 0)
+                            {
+                                _logger.LogWarning("Aucun visage détecté dans l'image d'entraînement: {File}. Image ignorée.", Path.GetFileName(fullPath));
+                                mat.Dispose();
+                                failedImages.Add(pic.Url);
+                                continue;
+                            }
 
-                            _logger.LogDebug("Image chargée et normalisée: {Path}", Path.GetFileName(fullPath));
+                            // Prendre le plus grand visage détecté
+                            var faceRect = detectedFaces.OrderByDescending(r => r.Width * r.Height).First();
+                            using var faceMat = new Mat(mat, faceRect);
+                            var normalizedMat = NormalizeFace(faceMat);
+
+                            // Augmentation x4 : original + flip + brighter + darker
+                            var variants = AugmentFace(normalizedMat);
+                            normalizedMat.Dispose();
+                            foreach (var v in variants)
+                            {
+                                images.Add(v);
+                                labels.Add(pic.PersonId);
+                            }
+
+                            mat.Dispose();
+                            _logger.LogDebug("Visage extrait, normalisé et augmenté x{Count}: {File}",
+                                variants.Count, Path.GetFileName(fullPath));
                         }
                         catch (Exception ex)
                         {
@@ -382,67 +426,54 @@ namespace FaceCheck.Services
                     }
 
                     if (failedImages.Any())
-                    {
-                        _logger.LogWarning(" Échec du chargement de {Count}/{Total} images",
-                            failedImages.Count,
-                            pictures.Count);
-                    }
+                        _logger.LogWarning("Echec du chargement de {FailedCount}/{TotalCount} images",
+                            failedImages.Count, pictures.Count);
 
                     if (images.Count == 0)
                     {
-                        _logger.LogError(" Aucune image valide pour l'entraînement");
+                        _logger.LogError("Aucune image valide pour l'entraînement. Vérifiez que les images uploadées contiennent des visages détectables par Haar Cascade.");
                         return;
                     }
 
                     if (images.Count < 2)
                     {
-                        _logger.LogError(" Au moins 2 images valides sont nécessaires. Trouvé: {Count}", images.Count);
-                        
-                        // Libération de la mémoire
-                        foreach (var img in images)
-                        {
-                            img.Dispose();
-                        }
+                        _logger.LogError("Au moins 2 images valides sont nécessaires. Trouvé: {Count}", images.Count);
+                        foreach (var img in images) img.Dispose();
                         return;
                     }
 
-                    // Vérification: au moins 2 personnes différentes
                     var uniqueLabels = labels.Distinct().Count();
                     if (uniqueLabels < 2)
+                        _logger.LogWarning("Une seule personne détectée. Recommandé: au moins 2 personnes");
+
+                    _logger.LogInformation("Entraînement avec {ImageCount} images pour {PersonCount} personne(s)",
+                        images.Count, uniqueLabels);
+
+                    // Sérialiser Train + Write avec le semaphore (non thread-safe)
+                    await _semaphore.WaitAsync();
+                    try
                     {
-                        _logger.LogWarning(" Une seule personne détectée. Recommandé: au moins 2 personnes");
+                        _recognizer.Train(images.ToArray(), labels.ToArray());
+
+                        var modelDir = Path.GetDirectoryName(_modelPath);
+                        if (!string.IsNullOrEmpty(modelDir))
+                            Directory.CreateDirectory(modelDir);
+
+                        _recognizer.Write(_modelPath);
+                        IsModelTrained = true;
                     }
-
-                    _logger.LogInformation(" Entraînement avec {ImageCount} images pour {PersonCount} personne(s)",
-                        images.Count,
-                        uniqueLabels);
-
-                    // Entraînement du modèle
-                    _recognizer.Train(images.ToArray(), labels.ToArray());
-
-                    // Sauvegarde du modèle
-                    var modelDir = Path.GetDirectoryName(_modelPath);
-                    if (!string.IsNullOrEmpty(modelDir))
+                    finally
                     {
-                        Directory.CreateDirectory(modelDir);
+                        _semaphore.Release();
                     }
-
-                    _recognizer.Write(_modelPath);
-                    IsModelTrained = true;
 
                     _logger.LogInformation("Modèle LBPH entraîné et sauvegardé: {Path}", _modelPath);
-
-                    // Libération de la mémoire
-                    foreach (var img in images)
-                    {
-                        img.Dispose();
-                    }
-
-                    _logger.LogInformation(" Entraînement terminé avec succès!");
+                    foreach (var img in images) img.Dispose();
+                    _logger.LogInformation("Entraînement terminé avec succès.");
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, " Erreur critique lors de l'entraînement du modèle");
+                    _logger.LogError(ex, "Erreur critique lors de l'entraînement du modèle");
                     IsModelTrained = false;
                     throw;
                 }
@@ -459,46 +490,43 @@ namespace FaceCheck.Services
                 {
                     _logger.LogInformation("Exécution des diagnostics...");
 
-                    // 1. Vérifier le fichier de modèle
                     result.ModelFileExists = File.Exists(_modelPath);
                     if (result.ModelFileExists)
                     {
                         var fileInfo = new FileInfo(_modelPath);
                         result.ModelFileSize = fileInfo.Length;
-                        _logger.LogInformation(" Fichier modèle: {Size} octets", result.ModelFileSize);
+                        _logger.LogInformation("Fichier modèle: {Size} octets", result.ModelFileSize);
                     }
                     else
                     {
                         _logger.LogWarning("Fichier modèle non trouvé: {Path}", _modelPath);
                     }
 
-                    // 2. Vérifier les images en base
-                    var pictures = _context.PictureDirectory
-                        .Include(p => p.Person)
-                        .ToList();
+                    List<PictureDirectory> pictures;
+                    using (var scope = _scopeFactory.CreateScope())
+                    {
+                        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                        pictures = context.PictureDirectory
+                            .Include(p => p.Person)
+                            .ToList();
+                    }
 
                     result.TotalImages = pictures.Count;
                     result.TotalPersons = pictures.Select(p => p.PersonId).Distinct().Count();
 
                     _logger.LogInformation("Base de données: {Images} images, {Persons} personnes",
-                        result.TotalImages,
-                        result.TotalPersons);
+                        result.TotalImages, result.TotalPersons);
 
-                    // 3. Vérifier les images par personne
                     var groupedByPerson = pictures.GroupBy(p => p.PersonId);
                     foreach (var group in groupedByPerson)
                     {
                         var person = group.First().Person;
                         var count = group.Count();
                         result.ImagesPerPerson[group.Key] = count;
-
-                        _logger.LogInformation("  - PersonId {Id} ({Name}): {Count} image(s)",
-                            group.Key,
-                            $"{person.Firstname} {person.Lastname}",
-                            count);
+                        _logger.LogInformation("PersonId {Id} ({Name}): {Count} image(s)",
+                            group.Key, $"{person.Firstname} {person.Lastname}", count);
                     }
 
-                    // 4. Vérifier que les fichiers existent physiquement
                     var envPath = _env.WebRootPath;
                     var existingFiles = 0;
                     var missingFiles = new List<string>();
@@ -507,13 +535,9 @@ namespace FaceCheck.Services
                     {
                         var fullPath = Path.Combine(envPath, pic.Url.TrimStart('/'));
                         if (File.Exists(fullPath))
-                        {
                             existingFiles++;
-                        }
                         else
-                        {
                             missingFiles.Add(pic.Url);
-                        }
                     }
 
                     result.ExistingImageFiles = existingFiles;
@@ -523,35 +547,25 @@ namespace FaceCheck.Services
                     {
                         _logger.LogWarning("{Count} fichier(s) image manquant(s)", missingFiles.Count);
                         foreach (var missing in missingFiles)
-                        {
-                            _logger.LogWarning("  - {Path}", missing);
-                        }
+                            _logger.LogWarning("Fichier manquant: {Path}", missing);
                     }
                     else
                     {
                         _logger.LogInformation("Tous les fichiers images existent");
                     }
 
-                    // 5. Vérifier l'état du recognizer
                     result.IsModelLoaded = IsModelTrained;
                     _logger.LogInformation("Modèle chargé: {Status}", result.IsModelLoaded ? "Oui" : "Non");
 
-                    // 6. Recommandations
                     if (result.TotalImages < 2)
-                    {
                         _logger.LogWarning("RECOMMANDATION: Ajoutez au moins 2 images pour l'entraînement");
-                    }
 
                     if (result.TotalPersons < 2)
-                    {
                         _logger.LogWarning("RECOMMANDATION: Ajoutez au moins 2 personnes différentes");
-                    }
 
                     var personsWithFewImages = result.ImagesPerPerson.Where(kvp => kvp.Value < 3);
                     if (personsWithFewImages.Any())
-                    {
                         _logger.LogWarning("RECOMMANDATION: Certaines personnes ont moins de 3 images");
-                    }
 
                     _logger.LogInformation("Diagnostics terminés");
                 }
@@ -571,6 +585,7 @@ namespace FaceCheck.Services
             {
                 _faceCascade?.Dispose();
                 _recognizer?.Dispose();
+                _semaphore?.Dispose();
                 _logger.LogInformation("Ressources libérées");
             }
             catch (Exception ex)
