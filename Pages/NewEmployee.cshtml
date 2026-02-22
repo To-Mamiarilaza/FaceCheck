@@ -1,7 +1,7 @@
-﻿@page
+@page
 @model NewEmployeeModel
 @{
-    ViewData["Title"] = "New Employee";
+ViewData["Title"] = "New Employee";
 }
 
 <!DOCTYPE html>
@@ -119,6 +119,7 @@
             padding-bottom: 1rem;
         }
 
+        /* --- Camera Section --- */
         .detection-frame {
             width: 100%;
             aspect-ratio: 4/3;
@@ -130,15 +131,15 @@
             justify-content: center;
             position: relative;
             overflow: hidden;
-            transition: all 0.2s ease;
+            transition: border-color 0.2s ease;
         }
 
-        .detection-frame:hover {
-            border-color: rgba(0, 255, 255, 0.3);
+        .detection-frame.camera-active {
+            border-color: rgba(0, 255, 255, 0.4);
         }
 
         .start-camera-btn {
-            padding: 1.5rem 2.5rem;
+            padding: 1.25rem 2rem;
             font-size: 1rem;
             color: #ffffff;
             background: rgba(0, 255, 255, 0.15);
@@ -155,15 +156,12 @@
             transform: translateY(-2px);
         }
 
-        .start-camera-btn:active {
-            transform: translateY(0);
-        }
-
         #videoElement {
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: none;
+            transform: scaleX(-1); /* miroir naturel */
         }
 
         #videoElement.active {
@@ -175,36 +173,143 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 60%;
-            height: 70%;
+            width: 55%;
+            height: 72%;
             border: 2px solid rgba(0, 255, 255, 0.6);
-            border-radius: 12px;
+            border-radius: 50% 50% 45% 45%;
             pointer-events: none;
+            display: none;
         }
 
-        .camera-overlay::before,
-        .camera-overlay::after {
-            content: '';
+        .camera-overlay.active {
+            display: block;
+        }
+
+        .capture-flash {
             position: absolute;
-            width: 25px;
-            height: 25px;
-            border: 2px solid #00ffff;
+            inset: 0;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.05s ease;
+            border-radius: 12px;
         }
 
-        .camera-overlay::before {
-            top: -2px;
-            left: -2px;
-            border-right: none;
-            border-bottom: none;
+        .capture-flash.active {
+            opacity: 0.6;
         }
 
-        .camera-overlay::after {
-            top: -2px;
-            right: -2px;
-            border-left: none;
-            border-bottom: none;
+        /* --- Capture Controls --- */
+        .capture-controls {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 1rem;
+            gap: 1rem;
         }
 
+        .capture-controls.visible {
+            display: flex;
+        }
+
+        .capture-progress {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #00ffff;
+            min-width: 80px;
+        }
+
+        .capture-progress span {
+            font-size: 1.5rem;
+        }
+
+        .btn-capture {
+            flex: 1;
+            padding: 0.85rem 1.25rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: rgba(0, 255, 255, 0.15);
+            color: #00ffff;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+        }
+
+        .btn-capture:hover:not(:disabled) {
+            background: rgba(0, 255, 255, 0.25);
+            border-color: rgba(0, 255, 255, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .btn-capture:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-capture.capturing {
+            background: rgba(255, 200, 0, 0.15);
+            color: #ffc800;
+            border-color: rgba(255, 200, 0, 0.3);
+        }
+
+        .btn-capture.done {
+            background: rgba(74, 222, 128, 0.15);
+            color: #4ade80;
+            border-color: rgba(74, 222, 128, 0.3);
+        }
+
+        /* --- Photo Strip --- */
+        .photo-strip {
+            display: flex;
+            gap: 6px;
+            margin-top: 0.85rem;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            min-height: 56px;
+            align-items: center;
+        }
+
+        .photo-strip::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .photo-strip::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 2px;
+        }
+
+        .photo-strip::-webkit-scrollbar-thumb {
+            background: rgba(0,255,255,0.3);
+            border-radius: 2px;
+        }
+
+        .capture-thumb {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            flex-shrink: 0;
+            transform: scaleX(-1);
+        }
+
+        .strip-placeholder {
+            display: flex;
+            gap: 6px;
+        }
+
+        .strip-slot {
+            width: 50px;
+            height: 50px;
+            border-radius: 6px;
+            border: 1px dashed rgba(255, 255, 255, 0.15);
+            flex-shrink: 0;
+        }
+
+        /* --- Form --- */
         .form-group {
             margin-bottom: 1.5rem;
         }
@@ -220,7 +325,8 @@
         }
 
         input[type="text"],
-        input[type="email"] {
+        input[type="email"],
+        input[type="password"] {
             width: 100%;
             padding: 0.85rem 1rem;
             font-size: 0.95rem;
@@ -233,12 +339,14 @@
         }
 
         input[type="text"]::placeholder,
-        input[type="email"]::placeholder {
+        input[type="email"]::placeholder,
+        input[type="password"]::placeholder {
             color: #606060;
         }
 
         input[type="text"]:focus,
-        input[type="email"]:focus {
+        input[type="email"]:focus,
+        input[type="password"]:focus {
             outline: none;
             border-color: rgba(0, 255, 255, 0.4);
             background: rgba(255, 255, 255, 0.08);
@@ -270,14 +378,15 @@
             border: 1px solid rgba(0, 255, 255, 0.3);
         }
 
-        .btn-register:hover {
+        .btn-register:hover:not(:disabled) {
             transform: translateY(-2px);
             background: rgba(0, 255, 255, 0.25);
             border-color: rgba(0, 255, 255, 0.5);
         }
 
-        .btn-register:active {
-            transform: translateY(0);
+        .btn-register:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
         }
 
         .btn-cancel {
@@ -292,92 +401,13 @@
             color: #ffffff;
         }
 
-        .btn-cancel:active {
-            transform: translateY(0);
-        }
-
-        .camera-status {
-            text-align: center;
-            margin-top: 1rem;
-            color: #606060;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-
-        .camera-status.active {
-            color: #4ade80;
-            font-weight: 600;
-        }
-
-        footer {
-            margin-top: auto;
-            padding: 2rem;
-            text-align: center;
-            color: #606060;
-            font-size: 0.9rem;
-        }
-        .file-input-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .file-input-wrapper input[type="file"] {
-            cursor: pointer;
-            opacity: 0;
-            position: absolute;
-            width: 100%;
-            height: 100%;
-        }
-
-        .file-input-wrapper::before {
-            content: "Choose File";
-            display: inline-block;
-            padding: 0.85rem 1.25rem;
-            border-radius: 8px;
-            background: rgba(0, 255, 255, 0.15);
-            border: 1px solid rgba(0, 255, 255, 0.3);
-            color: #00ffff;
-            font-weight: 600;
-            transition: all 0.2s ease;
-        }
-
-        .file-input-wrapper:hover::before {
-            background: rgba(0, 255, 255, 0.25);
-            border-color: rgba(0, 255, 255, 0.5);
-        }
-
-        .file-name {
-            flex: 1;
-            font-size: 0.9rem;
-            color: #b0b0b0;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-        }
-
-        .preview-wrapper {
-            margin-top: 1rem;
-            display: flex;
-            justify-content: center;
-        }
-
-        #filePreview {
-            max-width: 200px;
-            max-height: 200px;
-            border-radius: 12px;
-            border: 2px solid rgba(0, 255, 255, 0.3);
-            object-fit: cover;
-            box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
-        }
-        /* Popup résultat */
+        /* --- Result Popup --- */
         .result-popup {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%) scale(0);
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(10, 10, 25, 0.95);
             color: #ffffff;
             padding: 2rem 3rem;
             border-radius: 16px;
@@ -386,7 +416,8 @@
             transition: transform 0.3s ease, opacity 0.3s ease;
             opacity: 0;
             min-width: 300px;
-            box-shadow: 0 8px 32px rgba(0, 255, 255, 0.2);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 255, 255, 0.15);
         }
 
         .result-popup.active {
@@ -395,9 +426,15 @@
         }
 
         .result-message {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 600;
             margin-top: 1rem;
+        }
+
+        .result-subtext {
+            font-size: 0.85rem;
+            color: #808080;
+            margin-top: 0.5rem;
         }
 
         .result-icon {
@@ -408,7 +445,13 @@
             fill: none;
         }
 
-
+        footer {
+            margin-top: auto;
+            padding: 2rem;
+            text-align: center;
+            color: #606060;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 
@@ -425,51 +468,95 @@
         </svg>
         Back
     </a>
-    <form id="employeeForm" method="post" enctype="multipart/form-data">
 
-    @Html.AntiForgeryToken()
-    <div class="main-content">
-        <div class="form-group">
-            <label for="faceFile" class="file-label">Upload Face Image</label>
-            <div class="file-input-wrapper">
-                <input type="file" id="faceFile" name="FaceFile" accept="image/*" required>
-                <span class="file-name" id="fileName">No file chosen</span>
+    <form id="employeeForm" method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="main-content">
+
+            <!-- Colonne gauche : caméra -->
+            <div class="column">
+                <h2 class="column-title">Photos du visage <small style="color:#606060;font-size:0.8rem;font-weight:400">10 / 10 requises</small></h2>
+
+                <div class="detection-frame" id="cameraFrame">
+                    <button type="button" class="start-camera-btn" id="startCameraBtn" onclick="startCamera()">
+                        Démarrer la caméra
+                    </button>
+                    <video id="videoElement" autoplay playsinline></video>
+                    <div class="camera-overlay" id="cameraOverlay"></div>
+                    <div class="capture-flash" id="captureFlash"></div>
+                </div>
+
+                <div class="capture-controls" id="captureControls">
+                    <div class="capture-progress">
+                        <span id="photoCount">0</span>/10
+                    </div>
+                    <button type="button" class="btn-capture" id="captureBtn" onclick="startCapture()">
+                        Capturer 10 photos
+                    </button>
+                </div>
+
+                <div class="photo-strip" id="photoStrip">
+                    <div class="strip-placeholder" id="stripPlaceholder">
+                        <div class="strip-slot"></div>
+                        <div class="strip-slot"></div>
+                        <div class="strip-slot"></div>
+                        <div class="strip-slot"></div>
+                        <div class="strip-slot"></div>
+                        <div class="strip-slot"></div>
+                        <div class="strip-slot"></div>
+                        <div class="strip-slot"></div>
+                        <div class="strip-slot"></div>
+                        <div class="strip-slot"></div>
+                    </div>
+                </div>
+
+                <canvas id="captureCanvas" style="display:none"></canvas>
             </div>
-            <div class="preview-wrapper">
-                <img id="filePreview" src="" alt="Preview" style="display:none;">
+
+            <!-- Colonne droite : informations employé -->
+            <div class="column">
+                <h2 class="column-title">Employee Information</h2>
+
+                <div class="form-group">
+                    <label for="firstName">First Name</label>
+                    <input type="text" id="firstName" name="firstName" required placeholder="Enter first name">
+                </div>
+
+                <div class="form-group">
+                    <label for="lastName">Last Name</label>
+                    <input type="text" id="lastName" name="lastName" required placeholder="Enter last name">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required placeholder="Enter email address">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required placeholder="Enter password">
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="Confirm password">
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-register" id="registerBtn" disabled>Register</button>
+                    <button type="button" class="btn btn-cancel" onclick="cancelRegistration()">Cancel</button>
+                </div>
+
+                <p id="registerHint" style="font-size:0.8rem;color:#606060;margin-top:0.75rem;text-align:center">
+                    Capturez 10 photos pour activer l'enregistrement
+                </p>
             </div>
         </div>
-
-
-
-        <div class="column">
-            <h2 class="column-title">Employee Information</h2>
-            
-            <div class="form-group">
-                <label for="firstName">First Name</label>
-                <input type="text" id="firstName" name="firstName" required placeholder="Enter first name">
-            </div>
-
-            <div class="form-group">
-                <label for="lastName">Last Name</label>
-                <input type="text" id="lastName" name="lastName" required placeholder="Enter last name">
-            </div>
-
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" required placeholder="Enter email address">
-            </div>
-
-            <div class="button-group">
-                <button type="submit" class="btn btn-register">Register</button>
-                <button type="button" class="btn btn-cancel" onclick="cancelRegistration()">Cancel</button>
-            </div>
-        </div>
-    </div>
     </form>
 </div>
-    
-<!-- Overlay + Popup résultat -->
+
+<!-- Popup résultat -->
 <div class="result-popup" id="resultPopup">
     <svg class="result-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path id="resultIcon"></path>
@@ -477,99 +564,215 @@
     <div class="result-message" id="resultMessage"></div>
     <div class="result-subtext" id="resultSubtext"></div>
 </div>
-    <footer>
-        &copy; 2025 Face Recognition System. All rights reserved.
-    </footer>
+
+<footer>
+    &copy; 2025 Face Recognition System. All rights reserved.
+</footer>
 
 <script>
-document.getElementById("employeeForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
+    const TOTAL_PHOTOS = 10;
+    let capturedPhotos = [];
+    let cameraStream = null;
+    let isCapturing = false;
 
-    const form = document.getElementById("employeeForm");
-    const formData = new FormData(form);
+    // ── Caméra ──────────────────────────────────────────────────────────────
+    async function startCamera() {
+        try {
+            cameraStream = await navigator.mediaDevices.getUserMedia({
+                video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }
+            });
+            const video = document.getElementById('videoElement');
+            video.srcObject = cameraStream;
+            video.classList.add('active');
+            document.getElementById('startCameraBtn').style.display = 'none';
+            document.getElementById('cameraOverlay').classList.add('active');
+            document.getElementById('cameraFrame').classList.add('camera-active');
+            document.getElementById('captureControls').classList.add('visible');
+            document.getElementById('captureBtn').disabled = false;
+        } catch (err) {
+            alert("Impossible d'accéder à la caméra : " + err.message);
+        }
+    }
 
-    const token = document.querySelector(
-        'input[name="__RequestVerificationToken"]'
-    ).value;
+    // ── Capture automatique 10 photos ───────────────────────────────────────
+    async function startCapture() {
+        if (isCapturing) return;
+        isCapturing = true;
 
-    const response = await fetch("", {
-        method: "POST",
-        headers: {
-            "RequestVerificationToken": token
-        },
-        body: formData
+        const video  = document.getElementById('videoElement');
+        const canvas = document.getElementById('captureCanvas');
+        const ctx    = canvas.getContext('2d');
+        const btn    = document.getElementById('captureBtn');
+        const countEl = document.getElementById('photoCount');
+        const strip  = document.getElementById('photoStrip');
+
+        canvas.width  = video.videoWidth  || 640;
+        canvas.height = video.videoHeight || 480;
+
+        // Réinitialiser
+        capturedPhotos = [];
+        strip.innerHTML = '';
+        countEl.textContent = '0';
+        btn.disabled = true;
+        btn.classList.add('capturing');
+        btn.textContent = 'Capture en cours…';
+        updateRegisterButton();
+
+        for (let i = 0; i < TOTAL_PHOTOS; i++) {
+            // Flash
+            const flash = document.getElementById('captureFlash');
+            flash.classList.add('active');
+            setTimeout(() => flash.classList.remove('active'), 120);
+
+            // Capture (le miroir CSS est pour l'affichage, on capture l'image originale)
+            ctx.save();
+            ctx.scale(-1, 1);
+            ctx.drawImage(video, -canvas.width, 0);
+            ctx.restore();
+
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            capturedPhotos.push(dataUrl);
+
+            // Miniature
+            const img = document.createElement('img');
+            img.src = dataUrl;
+            img.className = 'capture-thumb';
+            strip.appendChild(img);
+
+            countEl.textContent = i + 1;
+
+            if (i < TOTAL_PHOTOS - 1) {
+                await sleep(700);
+            }
+        }
+
+        btn.classList.remove('capturing');
+        btn.classList.add('done');
+        btn.textContent = 'Recapturer';
+        btn.disabled = false;
+        isCapturing = false;
+        updateRegisterButton();
+    }
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function updateRegisterButton() {
+        const registerBtn  = document.getElementById('registerBtn');
+        const registerHint = document.getElementById('registerHint');
+        const ready = capturedPhotos.length === TOTAL_PHOTOS;
+        registerBtn.disabled = !ready;
+        registerHint.style.display = ready ? 'none' : 'block';
+    }
+
+    // ── Soumission du formulaire ─────────────────────────────────────────────
+    document.getElementById('employeeForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        if (capturedPhotos.length !== TOTAL_PHOTOS) {
+            alert(`Veuillez capturer ${TOTAL_PHOTOS} photos avant d'enregistrer.`);
+            return;
+        }
+
+        const password        = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        if (password !== confirmPassword) {
+            alert('Les mots de passe ne correspondent pas !');
+            return;
+        }
+
+        const form     = document.getElementById('employeeForm');
+        const formData = new FormData(form);
+
+        // Ajouter les photos base64
+        capturedPhotos.forEach(photo => {
+            formData.append('faceImagesBase64', photo);
+        });
+
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+        const registerBtn = document.getElementById('registerBtn');
+        registerBtn.disabled = true;
+        registerBtn.textContent = 'Enregistrement…';
+
+        try {
+            const response = await fetch('', {
+                method: 'POST',
+                headers: { 'RequestVerificationToken': token },
+                body: formData
+            });
+
+            if (response.ok) {
+                showResult(true,
+                    'Employé enregistré !',
+                    'Entraînement du modèle lancé en arrière-plan…');
+                resetForm();
+            } else {
+                const error = await response.text();
+                alert('Erreur : ' + error);
+                registerBtn.disabled = false;
+                registerBtn.textContent = 'Register';
+            }
+        } catch (err) {
+            alert('Erreur réseau : ' + err.message);
+            registerBtn.disabled = false;
+            registerBtn.textContent = 'Register';
+        }
     });
 
-    if (response.ok) {
-        showResult(true); // succès
-        form.reset();
-        
-    } else {
-        const error = await response.text();
-        alert("Error: " + error);
-    }
-});
+    // ── Réinitialisation ─────────────────────────────────────────────────────
+    function resetForm() {
+        document.getElementById('employeeForm').reset();
+        capturedPhotos = [];
+        document.getElementById('photoStrip').innerHTML = '';
+        document.getElementById('photoCount').textContent = '0';
+        document.getElementById('captureBtn').classList.remove('done');
+        document.getElementById('captureBtn').textContent = 'Capturer 10 photos';
+        updateRegisterButton();
 
-function cancelRegistration() {
-    if (confirm("Cancel registration?")) {
-        document.getElementById("employeeForm").reset();
-    }
-}
-
-function showResult(success, customMessage) {
-    const resultPopup = document.getElementById('resultPopup');
-    const message = document.getElementById('resultMessage');
-    const iconPath = document.querySelector('#resultIcon');
-
-    // Définir message et icône
-    if (success) {
-        message.textContent = customMessage || "Employee registered successfully!";
-        iconPath.setAttribute('d', 'M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17'); // Checkmark
-    } else {
-        message.textContent = customMessage || "An error occurred!";
-        iconPath.setAttribute('d', 'M18 6L6 18M6 6l12 12'); // X
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(t => t.stop());
+            cameraStream = null;
+        }
+        document.getElementById('videoElement').classList.remove('active');
+        document.getElementById('startCameraBtn').style.display = '';
+        document.getElementById('cameraOverlay').classList.remove('active');
+        document.getElementById('cameraFrame').classList.remove('camera-active');
+        document.getElementById('captureControls').classList.remove('visible');
     }
 
-    // Afficher le popup
-    resultPopup.classList.add('active');
-
-    // Masquer après 3 secondes
-    setTimeout(() => {
-        resultPopup.classList.remove('active');
-    }, 3000);
-}
-
-
-function goBack() {
-    window.history.back();
-}
-    document.getElementById('faceFile').addEventListener('change', function() {
-    const fileName = this.files.length ? this.files[0].name : "No file chosen";
-    document.getElementById('fileName').textContent = fileName;
-});
-const fileInput = document.getElementById('faceFile');
-const fileNameSpan = document.getElementById('fileName');
-const filePreview = document.getElementById('filePreview');
-
-fileInput.addEventListener('change', function() {
-    const file = this.files[0];
-    if (file) {
-        fileNameSpan.textContent = file.name;
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            filePreview.src = e.target.result;
-            filePreview.style.display = "block";
-        };
-        reader.readAsDataURL(file);
-    } else {
-        fileNameSpan.textContent = "No file chosen";
-        filePreview.src = "";
-        filePreview.style.display = "none";
+    function cancelRegistration() {
+        if (confirm('Annuler l\'enregistrement ?')) {
+            resetForm();
+        }
     }
-});
+
+    function goBack() {
+        window.history.back();
+    }
+
+    // ── Popup résultat ───────────────────────────────────────────────────────
+    function showResult(success, message, subtext) {
+        const popup    = document.getElementById('resultPopup');
+        const msgEl    = document.getElementById('resultMessage');
+        const subtextEl = document.getElementById('resultSubtext');
+        const iconPath = document.getElementById('resultIcon');
+
+        msgEl.textContent    = message || (success ? 'Succès !' : 'Erreur !');
+        subtextEl.textContent = subtext || '';
+
+        if (success) {
+            iconPath.setAttribute('d', 'M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17');
+            iconPath.closest('svg').style.stroke = '#4ade80';
+        } else {
+            iconPath.setAttribute('d', 'M18 6L6 18M6 6l12 12');
+            iconPath.closest('svg').style.stroke = '#f87171';
+        }
+
+        popup.classList.add('active');
+        setTimeout(() => popup.classList.remove('active'), 4000);
+    }
 </script>
-
 
 </body>
 

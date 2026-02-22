@@ -12,13 +12,13 @@ namespace FaceCheck.Services
 
     public class StatisticsService : IStatisticsService
     {
-        private readonly IConfiguration _configuration;
         private readonly ILogger<StatisticsService> _logger;
+        private readonly string _connectionString;
 
-        public StatisticsService(IConfiguration configuration, ILogger<StatisticsService> logger)
+        public StatisticsService( ILogger<StatisticsService> logger,string connectionString)
         {
-            _configuration = configuration;
             _logger = logger;
+            _connectionString = connectionString;
         }
 
         public async Task<UserAttendanceStatisticsResponse> GetUserAttendanceStatisticsAsync(int userId)
@@ -97,7 +97,7 @@ namespace FaceCheck.Services
                 WHERE Id = @UserId
             ";
 
-            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            using (var connection = new SqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
 
@@ -156,7 +156,7 @@ namespace FaceCheck.Services
                 ORDER BY md.DayDate
             ";
 
-            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            using (var connection = new SqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
 

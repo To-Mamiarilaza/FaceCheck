@@ -9,13 +9,143 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="94d5dedb-f33f-4389-a2ce-2d64edf1d29f" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-19-44-55-22b9519f-c0a6-4bf1-b5c3-08d3028cb510.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-19-45-28-a39aa2d5-cec2-46b4-808d-84dcd345b3af.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-19-45-41-c882bc5f-08af-4aa9-bc5e-61196b31b6ef.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-19-45-51-3337e6e8-db34-4eba-a798-2585e6794a1e.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-19-46-01-807e327d-0b40-4992-a36c-2118d861feec.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-19-47-44-bf95eabb-7b8e-45e4-a58b-2afea14cdbf2.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-19-47-58-7b83d22f-4b8d-417d-9dfc-6024604b7503.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-19-51-06-fe6ee82d-212f-4019-b780-3ecbc252ceda.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-19-51-15-69d5cacf-cb39-4743-8b2f-7afcf85d7df1.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-19-51-25-2046bc8a-058f-4e88-8996-1e7cdd336b20.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-19-51-35-25a36124-8cad-4277-bfd5-950f4e0314b5.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-16-20-e5a1f7cc-1143-4553-b946-81f9e927dce8.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-16-29-f9907393-a1a5-4ea2-b9c1-23e4f12d8e7c.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-16-38-045faa70-a69c-46ee-ba1f-77b0e691b6b8.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-16-47-a990d4d7-bb6c-4243-aab5-c004c2df56d0.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-17-04-f934b241-b907-4424-97d1-b665ff9efafa.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-17-13-8bec6e25-4a34-442a-bdaf-bbd9bffc9ea9.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-17-29-cf41cb09-d7e7-43d7-9a5f-276e3bf6e46d.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-17-38-2faf27bd-c753-412c-a23e-8d7501013362.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-17-47-c38204d4-f3f2-4324-8b7b-9e6590c38738.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-18-21-00b4647e-9f0c-4e26-9a67-93b4883392c7.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-18-33-5cd6c50e-96f8-4c0e-b455-c5a29f771b6c.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-18-42-d2cdb74a-32f4-4bd1-a3f5-a203d6799ad6.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-18-52-ebc8903b-ec49-47b8-8d6f-0acd6ab6b445.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-19-00-3b8a29c6-1334-4cc3-a62c-f5f2672fb4b5.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-19-10-b4b94e2e-8268-4abd-9b98-bf2df17a426e.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-19-19-bd2ebaa0-bf10-4b0f-a815-17330fe93d82.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-19-28-9768773d-ff33-4b08-95f4-c5a180e7564e.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-19-38-0ef480c5-0ebd-4689-bf57-04fe335c77d7.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-19-47-853bd437-ea5b-428f-8f38-80c5bbea2cac.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-26-27-90f2b6dc-f233-430f-852e-95c584adb7ea.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-26-37-dfc9680b-83ea-4968-ac59-dba422a05405.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-28-37-bad69fca-66ae-404d-9435-daeee5ab13b7.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-28-47-cd4d8f5d-32e2-4704-a1fc-052aa5f0b074.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-29-02-9d6929e8-8f2c-4779-a984-ad68ccbc8bc8.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-29-33-7315165f-66d2-4668-a0bb-12ba25bc0c1e.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-29-43-fd3d5368-65db-43fb-9a73-7b8710a2e6d0.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-30-02-09df7928-cb83-440b-94e4-dbc342fb2e5d.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-32-26-cf2cedcc-7b47-4b23-b2e4-42433086afc5.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-32-36-bcae66c9-c60b-4c8f-bd63-455acab572d8.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-32-46-62cf4e3d-2e7e-4f60-92a9-4cfbd94e1d17.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-34-25-d4924859-8c3d-4bbc-9c3f-9ad2a6b00cde.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-34-38-a11d3c87-1f18-44d8-8c59-0d9cb0fdacdb.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-45-58-2136518c-a7dd-439c-8522-5416baf66f1e.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-46-10-aba9a04f-ae0a-4403-9d4a-0adefe320138.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-46-19-1b73357d-8166-4f40-9852-8fbf1cac38ce.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-46-30-eb3da186-8f3b-4354-92fd-929482f0c8ee.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-46-39-fc40cd6d-8e4b-46bc-915e-8e3901d239cb.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-46-50-839556c4-488e-4f9c-8886-2d608907a825.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-47-00-8e9c23e7-bb08-4808-9cd5-81e0384afec5.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-47-11-d968b586-7bf2-4f98-9bd2-3fe85cdf176a.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-47-19-df42227a-9399-49f7-8891-2e2ee35ed227.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-20-47-30-a9390691-bc6d-4d55-b2ad-ecc83b49c116.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-21-01-06-d816eabe-8aac-4e87-8f99-e0dd0fe534af.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-21-01-16-24479ba5-4141-4647-9831-f70e7e16543c.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-21-01-29-a66b3a9c-771a-4b7d-b625-38dc9feb869d.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-21-01-38-1fdea8bb-cdad-4b52-b097-1273b374e612.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-21-05-11-fe3eb79e-cde9-49d8-b060-c30482e16a9b.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-21-05-22-ad86b205-ab79-41e7-8719-ce8c14c29302.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-21-05-31-b3f3f8b8-05af-4a65-8d72-4ed876d9f0de.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-21-05-40-21799a1e-d01e-4579-81b9-83a19565bd36.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-21-05-51-844cce5c-4712-4df7-8f06-d6d354142ee9.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-21-06-01-116bda90-4c1e-4233-94de-54565c7d379e.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-21-08-18-bc2a79eb-cfef-4682-be79-7cf84ccdde82.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-21-08-28-2af3a2da-c390-4775-a467-69a9a2979180.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-21-08-50-e51a66ef-d3cb-4a37-b8d5-84555afbfe67.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-21-09-07-cc420e92-db0d-4f1b-9186-4fe347686e0a.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-21-09-16-97c13b0d-373e-4489-a55b-fc948528d981.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-21-09-56-aa4ee6de-30c2-4973-9d28-d5cb681305df.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-21-10-05-1ed253e1-b9b3-48ef-a129-be23d7fba54f.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-21-10-17-72a8e3d2-c03a-4f82-8cbb-ee5df7b9e0dd.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-21-11-42-6f726c55-22e7-4267-bd33-de68379241c4.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-21-13-37-860ce6f8-c906-4194-91ce-51d8eda913ed.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-21-24-34-d9789fa2-8ff2-411b-b2cf-50d155c42daf.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-21-27-46-71e12c5b-8a9a-42b0-a844-a01084f070f9.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-21-28-52-024695b4-231c-4337-b565-0e5fad6c455b.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-21-29-35-9df2d977-310f-40b1-8367-d64c9edaa3c8.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-21-29-45-3afc0446-2b92-4087-9742-108860c01369.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-21-51-47-01141eab-8cb4-4b25-8da8-58f6a57e94fa.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-21-52-37-2e2a57d3-7aae-4c5b-856c-008acd65cb7e.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-21-52-47-8000e1bb-893a-4dff-b530-7ca93ed406b9.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-22-01-21-088d600e-d79d-4edd-b202-8238ff492ff1.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-22-01-54-045f3f6d-add5-4e53-8ddd-48e1ebdd431c.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-22-12-20-ef6f3e45-93fb-4fe5-ad53-64a47aba92bb.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-22-14-06-3c6ba9c4-935e-4cb5-9e2e-f3bf072851ee.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-22-15-09-13e453b9-cd5c-4f46-87e9-2a71498a5992.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-22-15-19-1da6eff4-c8fe-4f43-a5df-6845f337393a.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-22-15-34-44b44b82-15f6-4a1d-a6df-4a31e8993353.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/captures/2026-02-22-22-15-45-6afc60b6-a739-4053-a320-77399a6863a1.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/02310da5-5669-442c-8be7-84782e95a917.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/055206cc-575d-4c18-b05a-379b309f9820.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/098dc14f-e1fb-4f21-bd37-16be69cee876.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/0f4541d0-9284-4252-8181-2778b8381c39.jpeg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/0f571630-e1ce-4b96-8aa8-e05d36eb2cd3.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/10cbf5c9-ad3d-4b28-aa3f-eaf67cd731cb.jpeg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/21809b91-0e60-48e3-afc6-7787fe234d84.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/29c42d60-bab0-4bdc-886f-830867a50338.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/3bba7e68-a06f-4bd0-9383-764e4cde2564.jpeg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/49a5c845-2d58-4d72-8a6a-6ed8ffb959aa.jpeg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/4eccd6bd-2c09-4eb4-8aaf-b7545906933e.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/5049ecfd-5e46-486f-a543-01fbb4a723a5.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/5fdce683-5d70-4c98-819e-3e7506d5279c.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/6a6bf134-e5d2-407c-a06d-352ba18c37bd.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/6d105888-6dc3-4e69-a179-15a0d2b695aa.jpeg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/73faf31c-f7fa-416c-a220-59bbfe22ac0e.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/75c05d25-6957-4365-bc42-6a1e39c8e351.jpeg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/7f3726a9-c503-4461-ae48-7e065e358c8e.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/8a5611ef-7eb2-4b57-b54b-59ebf6bfd3c8.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/8b5d6c6f-ec27-488c-b151-f23c2eb8c9e9.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/8d812428-ff58-45ff-862e-5e11f8fb6cb3.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/8f4e7db3-dc6a-42d5-bcbe-a137d2963cec.jpeg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/95e0bb49-1bc9-46cf-9678-9aecbe31b8f6.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/9b8296c1-ada9-4523-b1ef-512ee900daa6.jpeg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/9fa02e86-9640-45a4-ac8d-880a7b40dd04.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/a262de92-61b1-4e06-a9cc-3d16b675cdb8.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/b88a0752-1c3a-4333-bc68-ff8760f7c935.jpeg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/c4559022-0e66-4474-9eb4-0f9d14bf761d.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/c8cb4527-c4c2-4b62-9b77-30c2ff2e01b8.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/c8cbb28d-ad50-4500-ae25-2a1ee1fa63eb.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/cf405fa7-660c-4c9a-8018-591515543a78.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/d2469413-57d1-4116-9ebd-a7c8b742f669.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/d34e6a37-fc91-4700-aa52-2b5188cff482.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/e51390f7-b770-42f5-934c-ee5baa9d3a68.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/e7feae1f-5e1a-46e9-8706-c9f4c789e428.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/e97e6601-7613-49a4-98df-6ede45fb4abe.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/ead3d2f9-a2c8-48a5-9956-4cc9867c236c.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wwwroot/faces/fd7cc0e7-a05e-4070-a652-ead7f1ad9242.jpg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.FaceCheck.dir/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.FaceCheck.dir/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Controllers/FaceController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Controllers/FaceController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Data/AppDbContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Data/AppDbContext.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Models/Attendance.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Models/Attendance.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Models/Person.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Models/Person.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Models/face_model.yml" beforeDir="false" afterPath="$PROJECT_DIR$/Models/face_model.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Pages/Detection.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/Pages/Detection.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Pages/FaceRecognitionSettings.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Pages/FaceRecognitionSettings.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Pages/NewEmployee.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Pages/NewEmployee.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Pages/NewEmployee.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/Pages/NewEmployee.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Program.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Services/FaceRecognitionService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Services/FaceRecognitionService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/appsettings.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -26,10 +156,15 @@
     <option name="firstShow" value="false" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="2" />
+    <option name="cachedIndexableFilesCount" value="10" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="main" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RESET_MODE" value="HARD" />
   </component>
@@ -47,8 +182,14 @@
 }</component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/Pages/Detection.cshtml" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" root2="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Pages/FaceRecognitionSettings.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Pages/Index.cshtml" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" root2="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Pages/Index.cshtml.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock:///home/zaby/M2/FaceCheck/Pages/NewEmployee.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///home/zaby/M2/FaceCheck/Pages/NewEmployee.cshtml" root0="FORCE_HIGHLIGHTING" root1="SKIP_HIGHLIGHTING" root2="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Services/FaceRecognitionService.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Services/IAttendanceService.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Services/IFaceRecognitionService.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/wwwroot/lib/bootstrap/dist/js/bootstrap.esm.js.map" root0="FORCE_HIGHLIGHTING" />
     <setting file="file:///usr/lib/dotnet/sdk/8.0.121/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_default.globalconfig" root0="FORCE_HIGHLIGHTING" />
   </component>
@@ -69,13 +210,14 @@
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;fix/rebaseFaceId&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;fix/Attendances&quot;,
     &quot;last_opened_file_path&quot;: &quot;/home/zaby/M2/FaceCheck/FaceCheck.csproj&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
@@ -124,6 +266,10 @@
       <workItem from="1765473101138" duration="9264000" />
       <workItem from="1765483651074" duration="6141000" />
       <workItem from="1766339499415" duration="6195000" />
+      <workItem from="1769009428878" duration="14677000" />
+      <workItem from="1769103773206" duration="5101000" />
+      <workItem from="1769267260512" duration="3849000" />
+      <workItem from="1771776594691" duration="11185000" />
     </task>
     <servers />
   </component>

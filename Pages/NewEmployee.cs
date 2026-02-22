@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.ComponentModel.DataAnnotations;
 using FaceCheck.Data;
 using FaceCheck.Models;
+using FaceCheck.Services;
 
 namespace FaceCheck.Pages;
 
@@ -9,72 +11,109 @@ public class NewEmployeeModel : PageModel
 {
     private readonly AppDbContext _context;
     private readonly IWebHostEnvironment _env;
+    private readonly IFaceRecognitionService _faceRecognitionService;
 
-    public NewEmployeeModel(AppDbContext context, IWebHostEnvironment env)
+    public NewEmployeeModel(AppDbContext context, IWebHostEnvironment env, IFaceRecognitionService faceRecognitionService)
     {
         _context = context;
         _env = env;
+        _faceRecognitionService = faceRecognitionService;
     }
 
     [BindProperty]
-    public string FirstName { get; set; }
+    [Required(ErrorMessage = "Le prénom est requis.")]
+    public string FirstName { get; set; } = string.Empty;
 
     [BindProperty]
-    public string LastName { get; set; }
+    [Required(ErrorMessage = "Le nom est requis.")]
+    public string LastName { get; set; } = string.Empty;
 
     [BindProperty]
-    public string Email { get; set; }
+    [Required(ErrorMessage = "L'email est requis.")]
+    [EmailAddress(ErrorMessage = "Format d'email invalide.")]
+    public string Email { get; set; } = string.Empty;
 
     [BindProperty]
-    public IFormFile FaceFile { get; set; } // fichier uploadé
+    [Required(ErrorMessage = "Le mot de passe est requis.")]
+    [MinLength(6, ErrorMessage = "Le mot de passe doit contenir au moins 6 caractères.")]
+    public string Password { get; set; } = string.Empty;
+
+    [BindProperty]
+    [Required(ErrorMessage = "La confirmation du mot de passe est requise.")]
+    public string ConfirmPassword { get; set; } = string.Empty;
+
+    [BindProperty]
+    public List<string> FaceImagesBase64 { get; set; } = new();
 
     public void OnGet()
     {
-        // initialisation si nécessaire
     }
 
     public async Task<IActionResult> OnPostAsync()
     {
-        if (FaceFile == null || FaceFile.Length == 0)
-            return BadRequest("Face image is required.");
+        if (!ModelState.IsValid)
+        {
+            var firstError = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage)
+                .FirstOrDefault();
+            return BadRequest(firstError ?? "Validation échouée.");
+        }
 
-        // 1️⃣ Insert Person
+        if (FaceImagesBase64 == null || FaceImagesBase64.Count == 0)
+            return BadRequest("Au moins une photo de visage est requise.");
+
+        if (Password != ConfirmPassword)
+            return BadRequest("Les mots de passe ne correspondent pas.");
+
         var person = new Person
         {
             Firstname = FirstName,
             Lastname = LastName,
             Email = Email,
-            Password = "123", 
-            Status = 10
+            Password = BCrypt.Net.BCrypt.HashPassword(Password),
+            Status = 1
         };
 
         _context.Persons.Add(person);
-        await _context.SaveChangesAsync(); 
+        await _context.SaveChangesAsync();
 
-        // 2️⃣ Save image
         var uploadsPath = Path.Combine(_env.WebRootPath, "faces");
         Directory.CreateDirectory(uploadsPath);
 
-        var fileName = $"{Guid.NewGuid()}{Path.GetExtension(FaceFile.FileName)}";
-        var filePath = Path.Combine(uploadsPath, fileName);
-
-        using (var stream = new FileStream(filePath, FileMode.Create))
+        foreach (var base64Image in FaceImagesBase64)
         {
-            await FaceFile.CopyToAsync(stream);
+            try
+            {
+                // Retirer le préfixe data:image/...;base64, si présent
+                var base64Data = base64Image.Contains(',')
+                    ? base64Image.Split(',')[1]
+                    : base64Image;
+
+                var imageBytes = Convert.FromBase64String(base64Data);
+                var fileName = $"{Guid.NewGuid()}.jpg";
+                var filePath = Path.Combine(uploadsPath, fileName);
+
+                await System.IO.File.WriteAllBytesAsync(filePath, imageBytes);
+
+                _context.PictureDirectory.Add(new PictureDirectory
+                {
+                    PersonId = person.Id,
+                    Url = "/faces/" + fileName,
+                    CreatedAt = DateTime.Now
+                });
+            }
+            catch
+            {
+                // Image base64 invalide, on ignore
+            }
         }
 
-        // 3️⃣ Insert Picture_Directory
-        var picture = new PictureDirectory
-        {
-            PersonId = person.Id,
-            Url = "/faces/" + fileName,
-            CreatedAt = DateTime.Now
-        };
-        _context.PictureDirectory.Add(picture);
         await _context.SaveChangesAsync();
+
+        // Réentraînement automatique du modèle en arrière-plan
+        _ = _faceRecognitionService.TrainModelAsync();
 
         return new OkResult();
     }
-    }
-
-
+}
